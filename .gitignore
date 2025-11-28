@@ -1,0 +1,95 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment Variables (SENSITIVE!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
+# Terraform State (SENSITIVE!)
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+
+# Build outputs
+frontend/dist/
+frontend/build/
+backend/dist/
+backend/build/
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Database dumps
+*.sql.gz
+*.sql.backup
+
+# Secrets & credentials (CRITICAL!)
+**/credentials.json
+**/serviceAccount.json
+**/*.pem
+**/*.key
+**/*.p12
+
+# Zip files
+*.zip
+
+# Backup files
+baca.txt
+dwashlaundryyyy.zip
+produk.sql
+stok_cabang.sql
+struktur.sql
+
+# Next.js (laundry app - not part of ITERARY)
+.next/
+.claude/
+src/test/
+public/uploads/
+
+# Other projects
+terraform-google-three-tier-web-app-main/
+
+# PS scripts
+*.ps1
+
+# Other docs
+DEPLOYMENT_GUIDE.md
+LIBRARY_SYSTEM_PLAN.md
+TRANSACTION_EDIT_REQUEST.md
+ITERASI_1_GUIDE.md
+
+# Drawio
+*.drawio
+
+# Build configs
+cloudbuild.yaml

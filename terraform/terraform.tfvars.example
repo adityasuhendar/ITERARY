@@ -1,0 +1,12 @@
+project_id = "your-gcp-project-id"
+region     = "asia-southeast2"
+
+db_tier     = "db-f1-micro"
+db_name     = "iterary"
+db_user     = "iterary_user"
+db_password = "YOUR_SECURE_PASSWORD_HERE"
+
+jwt_secret = "your-jwt-secret-min-32-chars"
+
+backend_image  = "gcr.io/your-project-id/iterary-backend:latest"
+frontend_image = "gcr.io/your-project-id/iterary-frontend:latest"

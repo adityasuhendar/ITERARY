@@ -1,0 +1,1409 @@
+================================================================================
+ITERARY - COMPLETE DEPLOYMENT GUIDE
+Three-Tier Library Management System on Google Cloud Platform
+================================================================================
+
+PROJECT INFO:
+- Project ID: iterary-479520
+- Region: asia-southeast2 (Jakarta)
+- Email: xpvggvg12@gmail.com
+- Free Trial: Rp 3,962,337 (28 days remaining)
+
+================================================================================
+PART 1: GCP PROJECT SETUP (30 minutes)
+================================================================================
+
+STEP 1.1: Create GCP Project
+-----------------------------
+1. Buka: https://console.cloud.google.com/
+2. Login dengan email: xpvggvg12@gmail.com
+3. Klik dropdown project (atas kiri) → "New Project"
+4. Project Name: "ITERARY"
+5. Project ID: iterary-479520 (atau auto-generate)
+6. Location: No organization
+7. Klik "CREATE"
+8. Tunggu 1-2 menit sampai project selesai dibuat
+9. **PENTING: CATAT PROJECT ID yang dibuat!**
+
+STEP 1.2: Link Billing Account
+-------------------------------
+1. Buka: https://console.cloud.google.com/billing
+2. Klik "Link a billing account"
+3. Pilih billing account yang ada (atau create new dengan free trial)
+4. Free trial: $300 USD (~Rp 3.9 juta) valid 90 hari
+5. Verify: Cek "Billing" menu, harus ada saldo
+6. **PENTING: Set budget alert di Rp 500,000 biar gak over!**
+
+STEP 1.3: Enable Required APIs
+-------------------------------
+1. Buka: https://console.cloud.google.com/apis/library
+2. Enable APIs satu-satu (ketik di search box, klik "ENABLE"):
+
+   a) Compute Engine API
+      - Untuk VM & networking
+
+   b) Cloud Run API
+      - Untuk deploy containerized apps
+
+   c) Cloud SQL Admin API
+      - Untuk MySQL database
+
+   d) Cloud SQL
+      - Additional SQL APIs
+
+   e) Redis (Memorystore) API
+      - Untuk caching layer
+
+   f) VPC Access API
+      - Untuk koneksi private Cloud Run ke VPC
+
+   g) Service Networking API
+      - Untuk VPC peering
+
+   h) Cloud Build API
+      - Untuk build Docker images (optional)
+
+   i) Container Registry API
+      - Untuk store Docker images
+
+   j) Cloud Storage API
+      - Untuk file storage
+
+3. Verification: Buka "APIs & Services" → "Enabled APIs"
+   Harus ada minimal 10 APIs enabled
+
+================================================================================
+PART 2: LOCAL TOOLS INSTALLATION (1 hour)
+================================================================================
+
+STEP 2.1: Install Google Cloud SDK (gcloud CLI)
+------------------------------------------------
+1. Download installer:
+   https://cloud.google.com/sdk/docs/install#windows
+
+2. Jalankan installer: GoogleCloudSDKInstaller.exe
+
+3. Install options:
+   - Install location: Default (C:\Users\...\AppData\Local\Google\Cloud SDK\)
+   - ✅ Run 'gcloud init' after installation
+   - ✅ Create desktop shortcuts
+   - ✅ Add gcloud to PATH
+
+4. Klik "Install" → Tunggu 5-10 menit
+
+5. Setelah selesai, window CMD muncul otomatis untuk 'gcloud init':
+
+   a) Login: Y (akan buka browser)
+   b) Pilih account: xpvggvg12@gmail.com
+   c) Allow access
+   d) Pick project: iterary-479520
+   e) Configure default region: 14 (asia-southeast2)
+   f) Configure default zone: a (asia-southeast2-a)
+
+6. **RESTART TERMINAL** (penting biar PATH ke-reload)
+
+7. Verify installation:
+   ```
+   gcloud --version
+   ```
+   Harus muncul: Google Cloud SDK xxx.x.x
+
+8. Test authentication:
+   ```
+   gcloud auth list
+   ```
+   Harus muncul: xpvggvg12@gmail.com
+
+STEP 2.2: Install Terraform
+----------------------------
+1. Download Terraform untuk Windows:
+   https://www.terraform.io/downloads
+
+2. Extract terraform.exe ke folder:
+   C:\terraform\
+
+3. Add to PATH (manual):
+   a) Windows Search → "Environment Variables"
+   b) System Properties → "Environment Variables" button
+   c) User variables → "Path" → "Edit"
+   d) Klik "New" → Ketik: C:\terraform
+   e) Klik "OK" sampai keluar
+
+4. **RESTART TERMINAL**
+
+5. Verify:
+   ```
+   terraform --version
+   ```
+   Harus muncul: Terraform v1.x.x
+
+   JIKA GAGAL, pake full path:
+   ```
+   C:\terraform\terraform.exe --version
+   ```
+
+STEP 2.3: Install Docker Desktop
+---------------------------------
+1. Download Docker Desktop for Windows:
+   https://www.docker.com/products/docker-desktop/
+
+2. Jalankan installer: Docker Desktop Installer.exe
+
+3. Install options:
+   - ✅ Use WSL 2 instead of Hyper-V (recommended)
+   - ✅ Add shortcut to desktop
+
+4. Klik "Install" → Tunggu 10-15 menit
+
+5. Setelah selesai: **RESTART KOMPUTER**
+
+6. Buka Docker Desktop dari desktop shortcut
+
+7. Tunggu sampai Docker Desktop status: "Docker is running" (hijau)
+
+8. Verify:
+   ```
+   docker --version
+   ```
+   Harus muncul: Docker version 2x.x.x
+
+9. Test:
+   ```
+   docker ps
+   ```
+   Harus muncul: CONTAINER ID   IMAGE   ...  (kosong tapi gak error)
+
+================================================================================
+PART 3: PREPARE PROJECT FILES
+================================================================================
+
+STEP 3.1: Verify Project Structure
+-----------------------------------
+Project folder: C:\Users\wahyu\Videos\bismillah\dwashlaundry
+
+Structure harus kayak gini:
+```
+dwashlaundry/
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── db.js
+│   │   │   └── redis.js
+│   │   ├── controllers/
+│   │   │   ├── authController.js
+│   │   │   ├── bookController.js
+│   │   │   ├── borrowingController.js
+│   │   │   └── statsController.js
+│   │   ├── middleware/
+│   │   │   ├── auth.js
+│   │   │   └── errorHandler.js
+│   │   ├── routes/
+│   │   │   ├── authRoutes.js
+│   │   │   ├── bookRoutes.js
+│   │   │   ├── borrowingRoutes.js
+│   │   │   └── statsRoutes.js
+│   │   └── server.js
+│   ├── package.json
+│   ├── Dockerfile
+│   └── .dockerignore
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── context/
+│   │   ├── utils/
+│   │   └── App.jsx
+│   ├── public/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── nginx.conf
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   └── .env (akan dibuat nanti)
+│
+├── terraform/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── terraform.tfvars (akan dibuat nanti)
+│
+├── iterary-schema-mysql.sql
+└── DEPLOYMENT_GUIDE.md
+```
+
+STEP 3.2: Fix Backend Dockerfile
+---------------------------------
+File: backend/Dockerfile
+
+Pastikan isinya:
+```dockerfile
+# Use Node.js LTS version
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 8080
+
+# Set environment to production
+ENV NODE_ENV=production
+
+# Start the application
+CMD ["node", "src/server.js"]
+```
+
+**PERUBAHAN dari template:**
+- Ganti `npm ci --only=production` jadi `npm install --production`
+  (karena gak ada package-lock.json)
+
+STEP 3.3: Fix Frontend Dockerfile
+----------------------------------
+File: frontend/Dockerfile
+
+Pastikan isinya:
+```dockerfile
+# Build stage
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+**PERUBAHAN dari template:**
+- Ganti `npm ci` jadi `npm install`
+
+STEP 3.4: Fix Frontend .dockerignore
+-------------------------------------
+File: frontend/.dockerignore
+
+HAPUS baris `.env` dari file ini! Jadi isinya:
+```
+node_modules
+dist
+npm-debug.log
+.env.local
+.env.production
+.git
+.gitignore
+README.md
+.vscode
+.idea
+*.md
+.DS_Store
+coverage
+.eslintcache
+```
+
+**PENTING:** .env HARUS masuk ke Docker image biar VITE_API_URL kebaca!
+
+STEP 3.5: Fix Backend Controllers (CRITICAL!)
+----------------------------------------------
+File: backend/src/controllers/bookController.js
+
+Di function getBooks, line 71, HARUS kayak gini:
+```javascript
+const books = await query(booksQuery, [...queryParams, parseInt(limit), parseInt(offset)]);
+```
+
+File: backend/src/controllers/borrowingController.js
+
+Di function getAllBorrowings, line 180, HARUS kayak gini:
+```javascript
+const borrowings = await query(borrowingsQuery, [...params, parseInt(limit), parseInt(offset)]);
+```
+
+File: backend/src/controllers/statsController.js
+
+Di function getPopularBooks, line 120, HARUS kayak gini:
+```javascript
+  [parseInt(limit)]
+```
+
+**KENAPA PENTING:**
+MySQL Cloud SQL super strict dengan parameter types. HARUS parseInt()
+sebelum pass ke query biar gak error "Incorrect arguments".
+
+================================================================================
+PART 4: BUILD DOCKER IMAGES (30 minutes)
+================================================================================
+
+STEP 4.1: Configure Docker for GCR
+-----------------------------------
+1. Buka PowerShell
+
+2. Authenticate Docker ke GCR:
+   ```
+   gcloud auth configure-docker gcr.io --quiet
+   ```
+
+3. Verify: Harusnya muncul "configured Docker to use gcloud as a credential helper"
+
+STEP 4.2: Build Backend Image
+------------------------------
+1. Masuk ke folder backend:
+   ```
+   cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\backend
+   ```
+
+2. Build image:
+   ```
+   docker build --no-cache -t gcr.io/iterary-479520/iterary-backend:latest .
+   ```
+
+3. Tunggu 5-10 menit (download base image + npm install)
+
+4. Verify build success: Harusnya muncul "Successfully tagged..."
+
+5. Check image size:
+   ```
+   docker images gcr.io/iterary-479520/iterary-backend:latest
+   ```
+   Size harusnya ~150-200MB
+
+STEP 4.3: Push Backend Image to GCR
+------------------------------------
+1. Push image:
+   ```
+   docker push gcr.io/iterary-479520/iterary-backend:latest
+   ```
+
+2. Tunggu 2-5 menit (upload ~150MB)
+
+3. Verify di GCP Console:
+   https://console.cloud.google.com/gcr/images/iterary-479520
+
+   Harusnya muncul: iterary-backend dengan tag "latest"
+
+STEP 4.4: Create Frontend .env File
+------------------------------------
+**PENTING: Jangan build frontend dulu! Harus buat .env dulu!**
+
+1. Masuk ke folder frontend:
+   ```
+   cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\frontend
+   ```
+
+2. Buat file .env:
+   ```
+   notepad .env
+   ```
+
+3. ISI FILE (ganti URL sesuai project ID lu):
+   ```
+   VITE_API_URL=https://iterary-api-XXXXXX.asia-southeast2.run.app
+   ```
+
+   **GANTI XXXXXX dengan project number lu!**
+   Project number bisa diliat di:
+   - GCP Console → Dashboard → Project Number
+   - Atau nanti setelah deploy backend, copy URL nya
+
+   **ALTERNATIF:** Isi dulu dengan placeholder:
+   ```
+   VITE_API_URL=https://iterary-api-889794700120.asia-southeast2.run.app
+   ```
+   (ganti nanti setelah deploy backend)
+
+4. Save & Close notepad
+
+5. Verify:
+   ```
+   type .env
+   ```
+   Harus muncul: VITE_API_URL=https://...
+
+STEP 4.5: Build Frontend Image
+-------------------------------
+1. Build image (masih di folder frontend):
+   ```
+   docker build --no-cache -t gcr.io/iterary-479520/iterary-frontend:latest .
+   ```
+
+2. Tunggu 10-20 menit (npm install React dependencies + Vite build)
+
+3. Possible issues:
+   - Network timeout → Retry build lagi
+   - Out of memory → Close apps lain, retry
+
+4. Verify build success
+
+STEP 4.6: Push Frontend Image to GCR
+-------------------------------------
+1. Push image:
+   ```
+   docker push gcr.io/iterary-479520/iterary-frontend:latest
+   ```
+
+2. Tunggu 2-5 menit
+
+3. Verify di GCP Console:
+   https://console.cloud.google.com/gcr/images/iterary-479520
+
+   Harusnya ada 2 images: backend & frontend
+
+================================================================================
+PART 5: TERRAFORM DEPLOYMENT (45 minutes)
+================================================================================
+
+STEP 5.1: Create Terraform Variables File
+------------------------------------------
+1. Masuk ke folder terraform:
+   ```
+   cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\terraform
+   ```
+
+2. Copy example file (kalo ada):
+   ```
+   copy terraform.tfvars.example terraform.tfvars
+   ```
+
+   ATAU buat baru:
+   ```
+   notepad terraform.tfvars
+   ```
+
+3. ISI FILE (ganti project_id sesuai project lu):
+   ```hcl
+   project_id = "iterary-479520"
+   region     = "asia-southeast2"
+
+   db_tier = "db-f1-micro"
+   db_name = "iterary"
+   db_user = "iterary_user"
+
+   jwt_secret = "super-secret-jwt-key-change-this-in-production-12345"
+
+   backend_image  = "gcr.io/iterary-479520/iterary-backend:latest"
+   frontend_image = "gcr.io/iterary-479520/iterary-frontend:latest"
+   ```
+
+4. Save & Close
+
+5. Verify:
+   ```
+   type terraform.tfvars
+   ```
+
+STEP 5.2: Authenticate Terraform
+---------------------------------
+1. Set application default credentials:
+   ```
+   gcloud auth application-default login
+   ```
+
+2. Browser window muncul → Login → Allow access
+
+3. Verify: Harusnya muncul "Credentials saved..."
+
+STEP 5.3: Initialize Terraform
+-------------------------------
+1. Initialize (download providers):
+   ```
+   terraform init
+   ```
+
+   JIKA ERROR "terraform not found":
+   ```
+   C:\terraform\terraform.exe init
+   ```
+
+2. Tunggu 1-2 menit (download Google provider ~100MB)
+
+3. Verify: Harusnya muncul "Terraform has been successfully initialized"
+
+STEP 5.4: Preview Deployment (Optional but Recommended)
+--------------------------------------------------------
+1. Preview apa yang akan dibuat:
+   ```
+   terraform plan
+   ```
+
+2. Read output carefully! Harusnya muncul:
+   - Plan: XX to add, 0 to change, 0 to destroy
+
+3. Resources yang akan dibuat:
+   - google_compute_network (VPC)
+   - google_vpc_access_connector
+   - google_sql_database_instance (Cloud SQL)
+   - google_sql_database
+   - google_sql_user
+   - google_redis_instance
+   - google_cloud_run_service (backend & frontend)
+   - google_service_account
+   - IAM bindings
+   - dll (total ~20+ resources)
+
+STEP 5.5: Deploy Infrastructure
+--------------------------------
+1. Deploy:
+   ```
+   terraform apply
+   ```
+
+2. Terraform ask confirmation:
+   ```
+   Do you want to perform these actions? (yes/no):
+   ```
+
+   Ketik: yes
+   Enter
+
+3. TUNGGU 15-25 MENIT! Deployment akan:
+   - Create VPC & networking (2-3 menit)
+   - Create Cloud SQL (20+ menit) ← PALING LAMA
+   - Create Redis (5-6 menit)
+   - Create Cloud Run services (2-3 menit)
+
+4. Progress indicators:
+   - VPC: ✓ (cepet)
+   - VPC Connector: ✓ (2-3 menit)
+   - Cloud SQL: ... (lama banget, sabar)
+   - Redis: ✓ (5-6 menit)
+   - Cloud Run Backend: ✓ (2 menit)
+   - Cloud Run Frontend: ✓ (2 menit)
+
+5. POSSIBLE ERRORS:
+
+   a) "The service account does not have permission..."
+      FIX: Enable APIs yang kurang (cek Part 1 Step 1.3)
+
+   b) "PORT environment variable is reserved"
+      FIX: Sudah di-fix di main.tf (gak ada PORT env var)
+
+   c) "Quota exceeded"
+      FIX: Request quota increase di GCP Console
+
+   d) Timeout
+      FIX: Jalanin `terraform apply` lagi (idempotent)
+
+6. Setelah selesai, harusnya muncul:
+   ```
+   Apply complete! Resources: XX added, 0 changed, 0 destroyed.
+
+   Outputs:
+
+   api_url = "https://iterary-api-XXXXXX.asia-southeast2.run.app"
+   database_instance = "iterary-db-XXXXXX"
+   db_password = <sensitive>
+   frontend_url = "https://iterary-frontend-XXXXXX.asia-southeast2.run.app"
+   ```
+
+7. **CATAT SEMUA OUTPUTS INI!!!**
+
+STEP 5.6: Get Terraform Outputs
+--------------------------------
+1. Get frontend URL:
+   ```
+   terraform output frontend_url
+   ```
+
+2. Get backend URL:
+   ```
+   terraform output api_url
+   ```
+
+3. Get database password:
+   ```
+   terraform output -raw db_password
+   ```
+   **CATAT PASSWORD INI!**
+
+4. Get database instance name:
+   ```
+   terraform output database_instance
+   ```
+
+================================================================================
+PART 6: DATABASE SETUP (20 minutes)
+================================================================================
+
+STEP 6.1: Create Cloud Storage Bucket for Import
+-------------------------------------------------
+1. Buka GCP Console:
+   https://console.cloud.google.com/storage
+
+2. Klik "CREATE BUCKET"
+
+3. Bucket name: iterary-479520-import
+
+4. Location:
+   - Location type: Region
+   - Region: asia-southeast2 (Jakarta)
+
+5. Storage class: Standard
+
+6. Access control: Uniform
+
+7. Encryption: Google-managed
+
+8. JANGAN CENTANG:
+   - Cross-bucket replication
+   - Object versioning
+
+9. Klik "CREATE"
+
+10. Popup "Public access prevention":
+    Klik "Enforce public access prevention on this bucket"
+
+STEP 6.2: Upload Database Schema File
+--------------------------------------
+1. Di bucket page (iterary-479520-import), klik "UPLOAD FILES"
+
+2. Select file:
+   C:\Users\wahyu\Videos\bismillah\dwashlaundry\iterary-schema-mysql.sql
+
+3. Tunggu upload selesai (file kecil, ~10KB)
+
+4. Verify: File muncul di bucket list
+
+STEP 6.3: Import Schema via GCP Console
+----------------------------------------
+1. Buka Cloud SQL:
+   https://console.cloud.google.com/sql/instances
+
+2. Klik instance: iterary-db-XXXXXX
+
+3. Tab "IMPORT" (di atas)
+
+4. Klik "IMPORT" button
+
+5. Import form:
+   - File format: SQL ✓
+   - Source: "Select file from Google Cloud Storage"
+   - Browse → pilih bucket: iterary-479520-import
+   - Pilih file: iterary-schema-mysql.sql
+
+   **PENTING:**
+   - Destination database: iterary (ketik manual di dropdown)
+
+6. Klik "IMPORT"
+
+7. Tunggu 1-2 menit
+
+8. Verify success:
+   - Operations list harusnya show: "Import succeeded"
+
+9. JIKA ERROR "service account permissions":
+
+   a) Buka bucket permissions:
+      https://console.cloud.google.com/storage/browser/iterary-479520-import
+
+   b) Tab "PERMISSIONS"
+
+   c) Klik "GRANT ACCESS"
+
+   d) New principals:
+      - Buka Cloud SQL instance page
+      - Copy "Service account" email (format: pXXXXXX-XXXXX@gcp-sa-cloud-sql...)
+      - Paste di "New principals"
+
+   e) Role: Storage Object Viewer
+
+   f) Klik "SAVE"
+
+   g) Retry import (Step 6.3 dari awal)
+
+STEP 6.4: Insert Admin User
+----------------------------
+**CRITICAL: Database masih kosong! Harus insert admin user biar bisa login!**
+
+Option A: Via gcloud CLI (Recommended)
+---------------------------------------
+1. Connect to Cloud SQL:
+   ```
+   gcloud sql connect iterary-db-XXXXXX --user=iterary_user --database=iterary
+   ```
+
+   Ganti XXXXXX dengan instance name dari `terraform output database_instance`
+
+2. Enter password: (paste password dari `terraform output -raw db_password`)
+
+3. Di MySQL prompt, jalanin:
+   ```sql
+   -- Generate password hash untuk 'admin123'
+   -- Di laptop, jalanin dulu:
+   cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\backend
+   node -e "const bcrypt = require('bcrypt'); bcrypt.hash('admin123', 10).then(h => console.log(h));"
+
+   -- Copy hash yang keluar (contoh: $2b$10$xxxxxxxxxxxxxxxxxxx...)
+
+   -- Di MySQL prompt:
+   INSERT INTO admins (username, name, email, password_hash, role)
+   VALUES (
+     'admin',
+     'Administrator',
+     'admin@itera.ac.id',
+     '$2b$10$paste_hash_disini',
+     'admin'
+   );
+
+   -- Verify:
+   SELECT * FROM admins;
+
+   -- Exit:
+   exit;
+   ```
+
+Option B: Via GCP Console (If gcloud fails)
+--------------------------------------------
+1. Buka Cloud SQL Studio:
+   https://console.cloud.google.com/sql/instances/iterary-db-XXXXXX/studio
+
+2. Connect dengan:
+   - User: iterary_user
+   - Password: (dari terraform output)
+   - Database: iterary
+
+3. Di SQL editor, paste & run:
+   ```sql
+   INSERT INTO admins (username, name, email, password_hash, role)
+   VALUES (
+     'admin',
+     'Administrator',
+     'admin@itera.ac.id',
+     '$2b$10$rGfE0kR.8L5d5F5F5F5F5uXqKzVxH5nYLNGZG5F5F5F5F5F5F5F5e',
+     'admin'
+   );
+   ```
+
+   **NOTE:** Hash di atas adalah bcrypt('admin123'). Untuk production,
+   generate hash baru dengan bcrypt!
+
+4. Run query
+
+5. Verify:
+   ```sql
+   SELECT * FROM admins;
+   ```
+
+STEP 6.5: Insert Sample Books (Optional)
+-----------------------------------------
+Untuk testing, insert beberapa sample books:
+
+```sql
+INSERT INTO books (isbn, title, author, publisher, year_published, category, total_copies, available_copies, description) VALUES
+('978-0-13-468599-1', 'Clean Code', 'Robert C. Martin', 'Prentice Hall', 2008, 'Programming', 5, 5, 'A Handbook of Agile Software Craftsmanship'),
+('978-0-13-235088-4', 'Clean Architecture', 'Robert C. Martin', 'Prentice Hall', 2017, 'Programming', 3, 3, 'A Craftsman Guide to Software Structure'),
+('978-0-201-61622-4', 'The Pragmatic Programmer', 'Andrew Hunt', 'Addison-Wesley', 1999, 'Programming', 4, 4, 'Your Journey To Mastery'),
+('978-0-596-00774-6', 'Head First Design Patterns', 'Eric Freeman', 'O Reilly', 2004, 'Programming', 3, 3, 'A Brain-Friendly Guide'),
+('978-0-135-95705-9', 'Domain-Driven Design', 'Eric Evans', 'Addison-Wesley', 2003, 'Software Engineering', 2, 2, 'Tackling Complexity in the Heart of Software');
+
+-- Verify:
+SELECT * FROM books;
+```
+
+================================================================================
+PART 7: FIX FRONTEND API URL (IF NEEDED)
+================================================================================
+
+**Cek dulu apakah frontend .env udah bener!**
+
+STEP 7.1: Check Current .env
+-----------------------------
+```
+cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\frontend
+type .env
+```
+
+Harusnya:
+```
+VITE_API_URL=https://iterary-api-XXXXXX.asia-southeast2.run.app
+```
+
+JIKA URL nya salah atau masih placeholder:
+
+STEP 7.2: Update .env with Correct API URL
+-------------------------------------------
+1. Get API URL dari Terraform:
+   ```
+   cd ..\terraform
+   terraform output api_url
+   ```
+
+2. Copy URL nya (tanpa quotes)
+
+3. Update .env:
+   ```
+   cd ..\frontend
+   notepad .env
+   ```
+
+4. Ganti isi dengan URL yang benar:
+   ```
+   VITE_API_URL=https://iterary-api-889794700120.asia-southeast2.run.app
+   ```
+   (ganti 889794700120 dengan project number lu)
+
+5. Save & Close
+
+STEP 7.3: Rebuild & Redeploy Frontend
+--------------------------------------
+1. Rebuild (HARUS --no-cache biar .env baru kepake):
+   ```
+   docker build --no-cache -t gcr.io/iterary-479520/iterary-frontend:latest .
+   ```
+
+2. Tunggu 10-15 menit
+
+3. Push:
+   ```
+   docker push gcr.io/iterary-479520/iterary-frontend:latest
+   ```
+
+4. Redeploy Cloud Run:
+   ```
+   gcloud run deploy iterary-frontend --image gcr.io/iterary-479520/iterary-frontend:latest --region asia-southeast2 --platform managed
+   ```
+
+5. Tunggu 2-3 menit
+
+================================================================================
+PART 8: TESTING & VERIFICATION (15 minutes)
+================================================================================
+
+STEP 8.1: Test Backend API
+---------------------------
+1. Get API URL:
+   ```
+   terraform output api_url
+   ```
+
+2. Buka di browser (atau curl):
+   ```
+   https://iterary-api-XXXXXX.asia-southeast2.run.app
+   ```
+
+   Expected response:
+   ```json
+   {"message": "ITERARY API"}
+   ```
+
+3. Test books endpoint:
+   ```
+   https://iterary-api-XXXXXX.asia-southeast2.run.app/api/books?page=1&limit=12
+   ```
+
+   Expected:
+   ```json
+   {
+     "success": true,
+     "data": {
+       "books": [...],
+       "pagination": {...}
+     }
+   }
+   ```
+
+   JIKA 500 ERROR:
+   - Cek logs: `gcloud run services logs read iterary-api --region=asia-southeast2 --limit=30`
+   - Lihat TROUBLESHOOTING section
+
+STEP 8.2: Test Frontend
+------------------------
+1. Get Frontend URL:
+   ```
+   terraform output frontend_url
+   ```
+
+2. Buka di browser:
+   ```
+   https://iterary-frontend-XXXXXX.asia-southeast2.run.app
+   ```
+
+3. Expected:
+   - Homepage load (tampilan library catalog)
+   - Books ditampilkan (kalo udah insert sample data)
+   - Navbar ada: Home, Books, Login
+
+4. Klik "Login" atau buka:
+   ```
+   https://iterary-frontend-XXXXXX.asia-southeast2.run.app/login
+   ```
+
+5. Switch ke "Admin Login" tab
+
+6. Login dengan:
+   - Username: admin
+   - Password: admin123
+
+7. Expected:
+   - Redirect ke /admin/dashboard
+   - Dashboard menampilkan stats
+   - Sidebar ada: Dashboard, Books, Borrowings, Members
+
+8. Test CRUD operations:
+   - Add new book
+   - Edit book
+   - View borrowings
+   - dll
+
+STEP 8.3: Verify Database Connection
+-------------------------------------
+1. Check Cloud SQL connections:
+   ```
+   gcloud sql operations list --instance=iterary-db-XXXXXX --limit=10
+   ```
+
+2. Check Redis:
+   ```
+   gcloud redis instances describe iterary-cache --region=asia-southeast2
+   ```
+
+   Status harus: "READY"
+
+STEP 8.4: Check Costs
+---------------------
+1. Buka Billing Reports:
+   https://console.cloud.google.com/billing/reports
+
+2. Filter: Project = iterary-479520
+
+3. Expected costs (per bulan):
+   - Cloud Run: Rp 0 (free tier, low traffic)
+   - Cloud SQL db-f1-micro: ~Rp 100,000
+   - Redis 1GB: ~Rp 450,000
+   - VPC Connector: ~Rp 120,000
+   - Networking: ~Rp 20,000
+   - TOTAL: ~Rp 690,000/bulan
+
+4. Free trial covers this for ~6 months!
+
+================================================================================
+PART 9: TROUBLESHOOTING
+================================================================================
+
+PROBLEM 1: Backend returns 500 error on /api/books
+---------------------------------------------------
+Error in logs: "Incorrect arguments to mysqld_stmt_execute"
+
+CAUSE: MySQL parameter type mismatch
+
+FIX:
+1. Verify controller files have parseInt():
+   ```
+   cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\backend
+   type src\controllers\bookController.js | findstr parseInt
+   ```
+
+   Line 71 MUST have:
+   ```javascript
+   const books = await query(booksQuery, [...queryParams, parseInt(limit), parseInt(offset)]);
+   ```
+
+2. If not, edit files:
+   - backend/src/controllers/bookController.js (line 71)
+   - backend/src/controllers/borrowingController.js (line 180)
+   - backend/src/controllers/statsController.js (line 120)
+
+3. Rebuild & redeploy:
+   ```
+   docker build --no-cache -t gcr.io/iterary-479520/iterary-backend:latest .
+   docker push gcr.io/iterary-479520/iterary-backend:latest
+   gcloud run deploy iterary-api --image=... --region=asia-southeast2 --platform managed
+   ```
+
+PROBLEM 2: Frontend shows "Network Error" or hits localhost
+------------------------------------------------------------
+CAUSE: VITE_API_URL not set correctly or .env not included in Docker image
+
+FIX:
+1. Check .dockerignore:
+   ```
+   cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\frontend
+   type .dockerignore | findstr ".env"
+   ```
+
+   MUST NOT have `.env` (without suffix)!
+   Only `.env.local` and `.env.production` should be ignored.
+
+2. Check .env exists and correct:
+   ```
+   type .env
+   ```
+
+3. Rebuild frontend:
+   ```
+   docker build --no-cache -t gcr.io/iterary-479520/iterary-frontend:latest .
+   docker push gcr.io/iterary-479520/iterary-frontend:latest
+   gcloud run deploy iterary-frontend --image=... --region=asia-southeast2
+   ```
+
+PROBLEM 3: gcloud command not found
+------------------------------------
+CAUSE: PATH not updated or terminal not restarted
+
+FIX:
+1. Restart terminal (PowerShell)
+
+2. If still fails, use full path:
+   ```
+   "C:\Users\YOUR_USERNAME\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd" --version
+   ```
+
+3. Add to PATH manually (see STEP 2.1)
+
+PROBLEM 4: Cloud SQL import fails - "No database selected"
+-----------------------------------------------------------
+CAUSE: Destination database not specified
+
+FIX:
+1. In import form, MUST select or type: "iterary"
+   (not "Specified in SQL file")
+
+2. Retry import
+
+PROBLEM 5: "Cannot connect to Cloud SQL" from Cloud Run
+--------------------------------------------------------
+CAUSE: VPC connector not working or Cloud SQL not allowing connections
+
+FIX:
+1. Verify VPC connector exists:
+   ```
+   gcloud compute networks vpc-access connectors describe iterary-vpc-connector --region=asia-southeast2
+   ```
+
+2. Check Cloud Run has VPC connector annotation:
+   ```
+   gcloud run services describe iterary-api --region=asia-southeast2 --format="value(metadata.annotations.'run.googleapis.com/vpc-access-connector')"
+   ```
+
+   Should output: projects/.../connectors/iterary-vpc-connector
+
+3. Check Cloud SQL allows private connections:
+   - Go to Cloud SQL instance
+   - Connections → Private IP should be "Enabled"
+
+PROBLEM 6: Out of quota
+------------------------
+CAUSE: Free tier limits exceeded
+
+FIX:
+1. Check quotas:
+   https://console.cloud.google.com/iam-admin/quotas
+
+2. Request increase (if eligible)
+
+3. Or wait for quota reset (daily/monthly)
+
+PROBLEM 7: Terraform apply timeout
+-----------------------------------
+CAUSE: Cloud SQL creation takes >20 minutes
+
+FIX:
+1. Just wait! It's normal.
+
+2. If truly stuck (>30 min), cancel (Ctrl+C)
+
+3. Run again:
+   ```
+   terraform apply
+   ```
+
+   Terraform will continue from where it stopped.
+
+================================================================================
+PART 10: CLEANUP (DESTROY RESOURCES)
+================================================================================
+
+**WARNING: This will DELETE ALL resources and data! Only do this if you're
+absolutely sure!**
+
+STEP 10.1: Backup Data (if needed)
+-----------------------------------
+1. Export database:
+   ```
+   gcloud sql export sql iterary-db-XXXXXX gs://iterary-479520-import/backup.sql --database=iterary
+   ```
+
+2. Download from bucket:
+   https://console.cloud.google.com/storage/browser/iterary-479520-import
+
+STEP 10.2: Destroy with Terraform
+----------------------------------
+1. Go to terraform folder:
+   ```
+   cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\terraform
+   ```
+
+2. Destroy all resources:
+   ```
+   terraform destroy
+   ```
+
+3. Confirm: yes
+
+4. Wait 10-15 minutes
+
+5. This will delete:
+   - Cloud Run services
+   - Cloud SQL instance
+   - Redis instance
+   - VPC connector
+   - VPC network
+   - Service accounts
+   - All data!
+
+STEP 10.3: Manual Cleanup (if terraform destroy fails)
+-------------------------------------------------------
+1. Delete Cloud Run services:
+   ```
+   gcloud run services delete iterary-api --region=asia-southeast2
+   gcloud run services delete iterary-frontend --region=asia-southeast2
+   ```
+
+2. Delete Cloud SQL:
+   ```
+   gcloud sql instances delete iterary-db-XXXXXX
+   ```
+
+3. Delete Redis:
+   ```
+   gcloud redis instances delete iterary-cache --region=asia-southeast2
+   ```
+
+4. Delete VPC connector:
+   ```
+   gcloud compute networks vpc-access connectors delete iterary-vpc-connector --region=asia-southeast2
+   ```
+
+5. Delete network:
+   ```
+   gcloud compute networks delete iterary-network
+   ```
+
+STEP 10.4: Delete Docker Images from GCR
+-----------------------------------------
+1. List images:
+   ```
+   gcloud container images list --repository=gcr.io/iterary-479520
+   ```
+
+2. Delete backend:
+   ```
+   gcloud container images delete gcr.io/iterary-479520/iterary-backend:latest --quiet
+   ```
+
+3. Delete frontend:
+   ```
+   gcloud container images delete gcr.io/iterary-479520/iterary-frontend:latest --quiet
+   ```
+
+STEP 10.5: Delete Storage Bucket
+---------------------------------
+1. Delete objects:
+   ```
+   gsutil rm -r gs://iterary-479520-import
+   ```
+
+2. Or via Console:
+   https://console.cloud.google.com/storage
+   → Select bucket → DELETE
+
+================================================================================
+PART 11: MONITORING & MAINTENANCE
+================================================================================
+
+STEP 11.1: View Logs
+--------------------
+Backend logs:
+```
+gcloud run services logs read iterary-api --region=asia-southeast2 --limit=100
+```
+
+Frontend logs:
+```
+gcloud run services logs read iterary-frontend --region=asia-southeast2 --limit=100
+```
+
+Cloud SQL logs:
+```
+gcloud sql operations list --instance=iterary-db-XXXXXX
+```
+
+STEP 11.2: Monitor Performance
+-------------------------------
+1. Cloud Run metrics:
+   https://console.cloud.google.com/run
+
+2. Click service → METRICS tab
+
+3. See:
+   - Request count
+   - Request latency
+   - Container CPU/Memory
+   - Instance count
+
+STEP 11.3: Cost Monitoring
+---------------------------
+1. Set budget alert:
+   https://console.cloud.google.com/billing/budgets
+
+2. Create budget:
+   - Name: ITERARY Monthly Budget
+   - Amount: Rp 500,000
+   - Alert at: 50%, 90%, 100%
+
+3. This will email you if costs exceed threshold
+
+STEP 11.4: Update Application
+------------------------------
+To update code:
+
+1. Edit source code
+2. Rebuild Docker image
+3. Push to GCR
+4. Redeploy Cloud Run
+
+Example for backend:
+```
+cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\backend
+
+# Edit code...
+
+docker build --no-cache -t gcr.io/iterary-479520/iterary-backend:latest .
+docker push gcr.io/iterary-479520/iterary-backend:latest
+gcloud run deploy iterary-api --image=gcr.io/iterary-479520/iterary-backend:latest --region=asia-southeast2 --platform managed
+```
+
+================================================================================
+CHEAT SHEET - QUICK COMMANDS
+================================================================================
+
+# Check project
+gcloud config get-value project
+
+# List Cloud Run services
+gcloud run services list
+
+# View logs
+gcloud run services logs read iterary-api --region=asia-southeast2 --limit=50
+
+# Restart Cloud Run
+gcloud run services update iterary-api --region=asia-southeast2
+
+# Connect to Cloud SQL
+gcloud sql connect iterary-db-XXXXXX --user=iterary_user --database=iterary
+
+# Check Terraform state
+cd C:\Users\wahyu\Videos\bismillah\dwashlaundry\terraform
+terraform show
+
+# Get outputs
+terraform output
+
+# Check billing
+gcloud billing accounts list
+gcloud billing projects describe iterary-479520
+
+# List Docker images
+gcloud container images list --repository=gcr.io/iterary-479520
+
+# Delete old images
+gcloud container images list-tags gcr.io/iterary-479520/iterary-backend
+gcloud container images delete gcr.io/iterary-479520/iterary-backend@sha256:XXXXX
+
+================================================================================
+IMPORTANT URLS
+================================================================================
+
+GCP Console: https://console.cloud.google.com/
+Cloud Run: https://console.cloud.google.com/run
+Cloud SQL: https://console.cloud.google.com/sql
+Redis: https://console.cloud.google.com/memorystore/redis/instances
+Storage: https://console.cloud.google.com/storage
+Container Registry: https://console.cloud.google.com/gcr
+Billing: https://console.cloud.google.com/billing
+Logs: https://console.cloud.google.com/logs
+
+Terraform Docs: https://registry.terraform.io/providers/hashicorp/google/latest/docs
+gcloud Docs: https://cloud.google.com/sdk/gcloud/reference
+Docker Docs: https://docs.docker.com/
+
+================================================================================
+FINAL NOTES
+================================================================================
+
+1. **BACKUP CREDENTIALS:**
+   - Save terraform outputs (URLs, passwords)
+   - Save GCP project ID
+   - Keep this guide!
+
+2. **COST OPTIMIZATION:**
+   - Stop Cloud SQL when not using (manual)
+   - Use Cloud Scheduler to auto-stop at night
+   - Delete unused Docker images
+   - Set budget alerts
+
+3. **SECURITY:**
+   - Change default admin password
+   - Use strong JWT_SECRET in production
+   - Enable Cloud Armor (WAF) if needed
+   - Regularly update dependencies
+
+4. **PERFORMANCE:**
+   - Monitor Cloud Run cold starts
+   - Adjust min instances if needed (costs more)
+   - Check Redis hit rate
+   - Optimize database indexes
+
+5. **PRODUCTION CHECKLIST:**
+   - [ ] Change all default passwords
+   - [ ] Use environment-specific secrets (Google Secret Manager)
+   - [ ] Enable Cloud SQL backups retention
+   - [ ] Setup monitoring & alerts
+   - [ ] Configure custom domain (optional)
+   - [ ] Enable Cloud CDN for frontend (optional)
+   - [ ] Setup CI/CD pipeline (Cloud Build)
+
+================================================================================
+SUPPORT
+================================================================================
+
+If stuck, check:
+1. This guide's TROUBLESHOOTING section
+2. Error logs: `gcloud run services logs read iterary-api --region=asia-southeast2`
+3. GCP Status: https://status.cloud.google.com/
+4. Stack Overflow: Tag with [google-cloud-platform]
+
+Good luck with your deployment! 🚀
+
+================================================================================
+END OF GUIDE
+================================================================================
