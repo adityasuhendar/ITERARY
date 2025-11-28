@@ -356,8 +356,17 @@ Monthly costs (Free tier eligible where applicable):
 
 ## 👥 Contributors
 
-**Project Owner**: [Your Name]
-**NIM**: [Your NIM]
+**Sistem Perpustakaan Digital ITERARY (ITERA Repository Archive Reading Facility)**
+
+| No | Name | NIM |
+|----|------|-----|
+| 1 | Edwin Darren Hasannudin | 122140111 |
+| 2 | Michael Caren Sihombing | 122140066 |
+| 3 | Marchel Karuna Kwee | 122140065 |
+| 4 | Muhammad Fauzan As Shabierin | 122140074 |
+| 5 | Aditya Wahyu Suhendar | 122140235 |
+| 6 | Dina Rahma Dita | 122140184 |
+
 **Course**: IF25-40201 - Komputasi Awan
 **Institution**: Institut Teknologi Sumatera
 
