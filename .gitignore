@@ -70,11 +70,21 @@ produk.sql
 stok_cabang.sql
 struktur.sql
 
-# Next.js (laundry app - not part of ITERARY)
+# Dwash Laundry Project Files (NOT part of ITERARY)
 .next/
 .claude/
-src/test/
-public/uploads/
+src/
+public/
+server.js
+next.config.mjs
+eslint.config.mjs
+forge.yaml
+jsconfig.json
+package.json
+package-lock.json
+tailwind.config.js
+postcss.config.js
+next-env.d.ts
 
 # Other projects
 terraform-google-three-tier-web-app-main/
