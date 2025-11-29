@@ -72,15 +72,11 @@ struktur.sql
 # Dwash Laundry Project Files (NOT part of ITERARY)
 .next/
 .claude/
-server.js
 next.config.mjs
 eslint.config.mjs
 forge.yaml
 jsconfig.json
-package.json
 package-lock.json
-tailwind.config.js
-postcss.config.js
 next-env.d.ts
 
 # Other projects
