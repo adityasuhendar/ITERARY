@@ -65,7 +65,6 @@ logs/
 
 # Backup files
 baca.txt
-dwashlaundryyyy.zip
 produk.sql
 stok_cabang.sql
 struktur.sql
@@ -73,8 +72,6 @@ struktur.sql
 # Dwash Laundry Project Files (NOT part of ITERARY)
 .next/
 .claude/
-src/
-public/
 server.js
 next.config.mjs
 eslint.config.mjs
