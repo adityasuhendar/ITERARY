@@ -13,9 +13,10 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const response = await api.get('/api/stats/dashboard');
-      setStats(response.data.data);
+      setStats(response.data.data || {});
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+      setStats({});
     } finally {
       setLoading(false);
     }

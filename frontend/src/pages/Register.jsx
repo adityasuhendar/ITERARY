@@ -5,6 +5,7 @@ import { BookOpen, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-rea
 
 const Register = () => {
   const [formData, setFormData] = useState({
+    memberId: '',
     fullName: '',
     email: '',
     password: '',
@@ -25,8 +26,8 @@ const Register = () => {
   };
 
   const validateForm = () => {
-    if (!formData.fullName || !formData.email || !formData.password) {
-      setError('All fields are required');
+    if (!formData.memberId || !formData.fullName || !formData.email || !formData.password) {
+      setError('Member ID, Name, Email and Password are required');
       return false;
     }
 
@@ -53,9 +54,11 @@ const Register = () => {
 
     try {
       await register({
-        full_name: formData.fullName,
+        member_id: formData.memberId,
+        name: formData.fullName,
         email: formData.email,
         password: formData.password,
+        member_type: 'student'
       });
 
       navigate('/member/dashboard');
@@ -97,6 +100,27 @@ const Register = () => {
           )}
 
           <div className="space-y-4">
+            <div>
+              <label htmlFor="memberId" className="block text-sm font-medium text-gray-700 mb-1">
+                Member ID / NIM
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="memberId"
+                  name="memberId"
+                  type="text"
+                  required
+                  value={formData.memberId}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  placeholder="120450001"
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
                 Full Name

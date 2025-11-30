@@ -20,10 +20,11 @@ const BookDetail = () => {
   const fetchBook = async () => {
     try {
       const response = await api.get(`/api/books/${id}`);
-      setBook(response.data.data);
+      setBook(response.data.data || null);
     } catch (error) {
       console.error('Failed to fetch book:', error);
       setMessage({ type: 'error', text: 'Book not found' });
+      setBook(null);
     } finally {
       setLoading(false);
     }

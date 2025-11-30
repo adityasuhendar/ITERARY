@@ -29,7 +29,12 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const user = await login(formData, loginType === 'member');
+      // Prepare credentials based on login type
+      const credentials = loginType === 'member' 
+        ? { email: formData.username, password: formData.password }
+        : { username: formData.username, password: formData.password };
+      
+      const user = await login(credentials, loginType === 'member');
 
       // Redirect based on role
       if (user.role === 'admin') {

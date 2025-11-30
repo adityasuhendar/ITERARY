@@ -24,9 +24,11 @@ const BooksPage = () => {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/api/books/categories');
-      setCategories(response.data.data || []);
+      const categoriesData = response.data.data;
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
+      setCategories([]);
     }
   };
 
@@ -44,7 +46,7 @@ const BooksPage = () => {
       const response = await api.get(`/api/books?${params}`);
       const data = response.data.data;
 
-      setBooks(data.books || []);
+      setBooks(Array.isArray(data.books) ? data.books : []);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch books:', error);

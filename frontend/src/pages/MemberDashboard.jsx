@@ -14,9 +14,11 @@ const MemberDashboard = () => {
   const fetchMyBorrowings = async () => {
     try {
       const response = await api.get('/api/borrowings/me');
-      setBorrowings(response.data.data || []);
+      const data = response.data.data;
+      setBorrowings(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch borrowings:', error);
+      setBorrowings([]);
     } finally {
       setLoading(false);
     }
