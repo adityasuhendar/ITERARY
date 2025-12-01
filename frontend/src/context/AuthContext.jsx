@@ -26,9 +26,15 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (credentials, isMember = false) => {
+const login = async (credentials, isMember = false) => {
     const endpoint = isMember ? '/api/auth/member-login' : '/api/auth/login';
-    const response = await api.post(endpoint, credentials);
+    
+    // Perbaikan: Ubah kunci 'username' menjadi 'email' untuk Member Login
+    const payload = isMember 
+      ? { email: credentials.username, password: credentials.password } 
+      : credentials; 
+
+    const response = await api.post(endpoint, payload);
 
     const { token, user } = response.data.data;
     localStorage.setItem('token', token);

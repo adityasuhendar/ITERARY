@@ -73,11 +73,15 @@ const adminLogin = async (req, res, next) => {
   }
 };
 
-// Member Login
+// Member Login (FIXED for Frontend Payload)
 const memberLogin = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    // KITA TANGKAP INPUT DARI FORM (username)
+    const { username, password } = req.body; 
 
+    // 1. Definisikan email (Karena FE mengirimnya di key 'username')
+    const email = username; 
+    
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -85,11 +89,14 @@ const memberLogin = async (req, res, next) => {
       });
     }
 
-    // Find member by email
+    // Find member by email (Mulai dari sini, logic sudah benar)
     const members = await query(
       'SELECT * FROM members WHERE email = ?',
       [email]
     );
+    
+    // ... LANJUTKAN DENGAN KODE memberLogin SISANYA ...
+    // ...
 
     if (members.length === 0) {
       return res.status(401).json({
@@ -144,41 +151,45 @@ const memberLogin = async (req, res, next) => {
   }
 };
 
-// Member Register
+// Member Register (FINAL FIX: Auto-generate member_id & Fix field name)
 const register = async (req, res, next) => {
   try {
-    const { member_id, name, email, phone, password, member_type } = req.body;
+    // 1. TANGKAP full_name (kunci dari form FE) dan HAPUS member_id dari destructuring
+    const { full_name, email, phone, password, member_type } = req.body;
 
-    // Validate required fields
-    if (!member_id || !name || !email || !password) {
+    // 2. GENERATE member_id otomatis (MEM-Timestamp)
+    const member_id = "MEM-" + Date.now();
+
+    // 3. UBAH VALIDASI: Cek full_name saja
+    if (!full_name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Member ID, name, email, and password are required'
+        message: 'Full Name, email, and password are required' // Ubah pesan error
       });
     }
 
-    // Check if email or member_id already exists
+    // Check if email already exists
     const existing = await query(
-      'SELECT * FROM members WHERE email = ? OR member_id = ?',
-      [email, member_id]
+      // Hapus pengecekan member_id di SQL
+      'SELECT * FROM members WHERE email = ?',
+      [email]
     );
 
     if (existing.length > 0) {
-      const field = existing[0].email === email ? 'Email' : 'Member ID';
       return res.status(409).json({
         success: false,
-        message: `${field} already exists`
+        message: 'Email already exists'
       });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert new member
+    // 4. UBAH INSERT: Gunakan full_name untuk mengisi kolom 'name' di Database
     const result = await query(
       `INSERT INTO members (member_id, name, email, phone, password_hash, member_type, status)
        VALUES (?, ?, ?, ?, ?, ?, 'active')`,
-      [member_id, name, email, phone || null, hashedPassword, member_type || 'student']
+      [member_id, full_name, email, phone || null, hashedPassword, member_type || 'student']
     );
 
     res.status(201).json({
@@ -187,7 +198,7 @@ const register = async (req, res, next) => {
       data: {
         id: result.insertId,
         member_id,
-        name,
+        name: full_name, // Kirim nama yang benar di response
         email
       }
     });

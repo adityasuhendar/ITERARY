@@ -38,6 +38,9 @@ const Login = () => {
         navigate('/member/dashboard');
       }
     } catch (err) {
+      // --- KODE DEBUG BARU UNTUK MELIHAT RESPON LENGKAP ---
+      console.error("LOGIN FAILED:", err.response);
+      // ---------------------------------------------------
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
