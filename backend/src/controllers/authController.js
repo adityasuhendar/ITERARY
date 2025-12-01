@@ -73,30 +73,27 @@ const adminLogin = async (req, res, next) => {
   }
 };
 
-// Member Login (FIXED for Frontend Payload)
+/// Member Login (FINAL FIX: Menerima 'username' dan memprosesnya sebagai 'email')
 const memberLogin = async (req, res, next) => {
   try {
-    // KITA TANGKAP INPUT DARI FORM (username)
-    const { username, password } = req.body; 
+    const { email, username, password } = req.body;
 
-    // 1. Definisikan email (Karena FE mengirimnya di key 'username')
-    const email = username; 
-    
-    if (!email || !password) {
+    // Gunakan salah satu
+    const userEmail = email || username;
+
+    // FIX VALIDASI
+    if (!userEmail || !password) {
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
       });
     }
 
-    // Find member by email (Mulai dari sini, logic sudah benar)
+    // Query berdasarkan email
     const members = await query(
       'SELECT * FROM members WHERE email = ?',
-      [email]
+      [userEmail]
     );
-    
-    // ... LANJUTKAN DENGAN KODE memberLogin SISANYA ...
-    // ...
 
     if (members.length === 0) {
       return res.status(401).json({
@@ -107,7 +104,6 @@ const memberLogin = async (req, res, next) => {
 
     const member = members[0];
 
-    // Check if member is active
     if (member.status !== 'active') {
       return res.status(403).json({
         success: false,
@@ -115,7 +111,6 @@ const memberLogin = async (req, res, next) => {
       });
     }
 
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, member.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({
@@ -124,7 +119,6 @@ const memberLogin = async (req, res, next) => {
       });
     }
 
-    // Generate token
     const token = generateToken({
       id: member.id,
       member_id: member.member_id,
@@ -150,6 +144,7 @@ const memberLogin = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // Member Register (FINAL FIX: Auto-generate member_id & Fix field name)
 const register = async (req, res, next) => {
