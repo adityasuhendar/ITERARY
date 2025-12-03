@@ -24,7 +24,7 @@ const BooksPage = () => {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/api/books/categories');
-      setCategories(response.data.data || []);
+      setCategories(response.data.data.categories || []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
     }
