@@ -7,7 +7,20 @@
     <title>ITERARY - Your Library, Elevated</title>
   </head>
   <body>
-    <div id="root"></div>
+    <noscript>
+      <div style="padding:16px;background:#fff3cd;border:1px solid #ffeeba;color:#856404;">
+        JavaScript tidak aktif. Aktifkan JavaScript untuk menjalankan aplikasi.
+      </div>
+    </noscript>
+    <div id="root">
+      <div style="padding:24px">
+        <h1>Memuat ITERARY...</h1>
+        <p>Jika ini tidak berubah, cek konsol browser untuk error.</p>
+      </div>
+    </div>
+    <script>
+      console.log('Index HTML loaded at', new Date().toISOString());
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
