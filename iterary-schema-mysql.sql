@@ -90,6 +90,10 @@ CREATE TABLE borrowings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     member_id INT NOT NULL,
     book_id INT NOT NULL,
+    -- Snapshot fields to mirror form inputs for easier admin viewing
+    member_nim VARCHAR(50),
+    member_name VARCHAR(255),
+    book_title VARCHAR(255),
     borrow_date DATE DEFAULT (CURRENT_DATE),
     due_date DATE NOT NULL,
     return_date DATE,
