@@ -6,6 +6,11 @@ let redis = null;
 
 // Initialize Redis connection (optional for local dev)
 const initRedis = () => {
+  // Allow disabling via env flag
+  if (process.env.REDIS_ENABLED === 'false') {
+    console.log('⚡ Redis disabled by configuration');
+    return null;
+  }
   try {
     redis = new Redis({
       host: process.env.REDIS_HOST || 'localhost',

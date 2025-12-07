@@ -92,6 +92,164 @@ const createBorrowing = async (req, res, next) => {
   }
 };
 
+// Admin create borrowing (specify member_id)
+const adminCreateBorrowing = async (req, res, next) => {
+  try {
+    let { member_id, book_id, duration_days } = req.body;
+
+    if (!member_id || !book_id || !duration_days) {
+      return res.status(400).json({ success: false, message: 'member_id, book_id, duration_days are required' });
+    }
+
+    // Normalize inputs
+    const duration = parseInt(duration_days, 10);
+    if (isNaN(duration) || duration < 1) {
+      return res.status(400).json({ success: false, message: 'duration_days must be a positive integer' });
+    }
+
+    // Resolve member_id: allow passing NIM (members.member_id) or numeric primary key (members.id)
+    let memberRow;
+    if (!isNaN(Number(member_id))) {
+      const rows = await query('SELECT * FROM members WHERE id = ?', [Number(member_id)]);
+      if (rows.length === 0) {
+        const alt = await query('SELECT * FROM members WHERE member_id = ?', [member_id]);
+        if (alt.length === 0) {
+          return res.status(404).json({ success: false, message: 'Member not found' });
+        }
+        memberRow = alt[0];
+      } else {
+        memberRow = rows[0];
+      }
+    } else {
+      const rows = await query('SELECT * FROM members WHERE member_id = ?', [member_id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Member not found' });
+      }
+      memberRow = rows[0];
+    }
+    const resolvedMemberId = memberRow.id;
+
+    const overdueBorrowings = await query(
+      'SELECT * FROM borrowings WHERE member_id = ? AND status = "overdue"',
+      [resolvedMemberId]
+    );
+    if (overdueBorrowings.length > 0) {
+      return res.status(400).json({ success: false, message: 'Member has overdue books.' });
+    }
+
+    // Resolve book: allow passing numeric id, ISBN, or title
+    let book;
+    if (!isNaN(Number(book_id))) {
+      const byId = await query('SELECT * FROM books WHERE id = ?', [Number(book_id)]);
+      if (byId.length > 0) {
+        book = byId[0];
+      }
+    }
+    if (!book) {
+      const byIsbn = await query('SELECT * FROM books WHERE isbn = ?', [book_id]);
+      if (byIsbn.length > 0) {
+        book = byIsbn[0];
+      }
+    }
+    if (!book) {
+      const byTitle = await query('SELECT * FROM books WHERE title = ?', [book_id]);
+      if (byTitle.length > 0) {
+        book = byTitle[0];
+      }
+    }
+    if (!book) {
+      return res.status(404).json({ success: false, message: 'Book not found. Provide book numeric id, ISBN, or exact title.' });
+    }
+    if (book.available_copies < 1) {
+      return res.status(400).json({ success: false, message: 'Book not available' });
+    }
+
+    const borrowDate = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + duration);
+
+    const result = await transaction(async (conn) => {
+      const [borrowingResult] = await conn.execute(
+        `INSERT INTO borrowings (member_id, book_id, borrow_date, due_date, status)
+         VALUES (?, ?, ?, ?, 'borrowed')`,
+        [resolvedMemberId, book.id, borrowDate, dueDate]
+      );
+      await conn.execute('UPDATE books SET available_copies = available_copies - 1 WHERE id = ?', [book.id]);
+      return borrowingResult;
+    });
+
+    await deleteCachePattern('books:*');
+    await deleteCachePattern(`book:${book.id}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Borrowing created',
+      data: {
+        id: result.insertId,
+        member_id: resolvedMemberId,
+        book_id: book.id,
+        borrow_date: borrowDate.toISOString().split('T')[0],
+        due_date: dueDate.toISOString().split('T')[0],
+        status: 'borrowed'
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update borrowing (Admin) - allow updating due_date and notes
+const updateBorrowing = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { due_date, notes } = req.body;
+
+    const rows = await query('SELECT * FROM borrowings WHERE id = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Borrowing not found' });
+    }
+
+    await query(
+      'UPDATE borrowings SET due_date = COALESCE(?, due_date), notes = COALESCE(?, notes) WHERE id = ?',
+      [due_date || null, notes || null, id]
+    );
+
+    const updated = await query('SELECT * FROM borrowings WHERE id = ?', [id]);
+    res.json({ success: true, data: updated[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete borrowing (Admin)
+// If borrowing is active (borrowed/overdue), restore book available_copies
+const deleteBorrowing = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const rows = await query('SELECT * FROM borrowings WHERE id = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Borrowing not found' });
+    }
+
+    const b = rows[0];
+
+    await transaction(async (conn) => {
+      if (b.status === 'borrowed' || b.status === 'overdue') {
+        await conn.execute('UPDATE books SET available_copies = available_copies + 1 WHERE id = ?', [b.book_id]);
+      }
+      await conn.execute('DELETE FROM borrowings WHERE id = ?', [id]);
+    });
+
+    await deleteCachePattern('books:*');
+    await deleteCachePattern(`book:${b.book_id}`);
+    await deleteCachePattern('stats:*');
+
+    res.json({ success: true, message: 'Borrowing deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get member's own borrowings
 const getMyBorrowings = async (req, res, next) => {
   try {
@@ -337,8 +495,11 @@ const getOverdueBorrowings = async (req, res, next) => {
 
 module.exports = {
   createBorrowing,
+  adminCreateBorrowing,
   getMyBorrowings,
   getAllBorrowings,
   processReturn,
-  getOverdueBorrowings
+  getOverdueBorrowings,
+  updateBorrowing,
+  deleteBorrowing
 };

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 // Import config
@@ -11,6 +12,9 @@ const authRoutes = require('./routes/auth');
 const bookRoutes = require('./routes/books');
 const borrowingRoutes = require('./routes/borrowings');
 const statsRoutes = require('./routes/stats');
+const categoryRoutes = require('./routes/categories');
+const memberRoutes = require('./routes/members');
+const settingsRoutes = require('./routes/settings');
 
 // Import middleware
 const { errorHandler, notFound } = require('./middleware/errorHandler');
@@ -49,6 +53,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/borrowings', borrowingRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/members', memberRoutes);
+// Settings routes
+app.use('/api', settingsRoutes);
+// Static uploads (for avatars, logos, etc.)
+app.use('/api/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -82,7 +92,7 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    // Initialize Redis (optional, will run without it)
+    // Initialize Redis (optional, can be disabled via REDIS_ENABLED=false)
     initRedis();
 
     // Start Express server
@@ -94,7 +104,8 @@ const startServer = async () => {
       console.log(`📡 Server: http://localhost:${PORT}`);
       console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📚 Database: MySQL`);
-      console.log(`⚡ Cache: Redis ${process.env.REDIS_HOST ? '(enabled)' : '(disabled)'}`);
+      const redisEnabled = process.env.REDIS_ENABLED === 'false' ? 'disabled' : (process.env.REDIS_HOST ? 'enabled' : 'disabled');
+      console.log(`⚡ Cache: Redis (${redisEnabled})`);
       console.log('='.repeat(50));
       console.log('');
     });
