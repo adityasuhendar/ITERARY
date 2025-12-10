@@ -25,8 +25,10 @@ const PORT = process.env.PORT || 8080;
 
 // Middleware
 const allowedOrigins = [
+  'https://iterary.web.id',
   'https://iterary-frontend-889794700120.asia-southeast2.run.app',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'https://iterary-proxy.xpvggvg12.workers.dev'
 ];
 app.use(cors({
   origin: function (origin, callback) {
