@@ -159,13 +159,17 @@ resource "google_cloud_run_service" "iterary_api" {
       containers {
         image = var.backend_image
 
+        ports {
+          container_port = 8080
+        }
+
         env {
           name  = "NODE_ENV"
           value = "production"
         }
         env {
-          name  = "DB_HOST"
-          value = google_sql_database_instance.iterary_db.private_ip_address
+          name  = "INSTANCE_UNIX_SOCKET"
+          value = "/cloudsql/${google_sql_database_instance.iterary_db.connection_name}"
         }
         env {
           name  = "DB_USER"
@@ -178,6 +182,10 @@ resource "google_cloud_run_service" "iterary_api" {
         env {
           name  = "DB_NAME"
           value = google_sql_database.iterary_database.name
+        }
+        env {
+          name  = "REDIS_ENABLED"
+          value = "true"
         }
         env {
           name  = "REDIS_HOST"
@@ -194,6 +202,27 @@ resource "google_cloud_run_service" "iterary_api" {
         env {
           name  = "CORS_ORIGIN"
           value = "*"
+        }
+
+        startup_probe {
+          initial_delay_seconds = 0
+          timeout_seconds       = 5
+          period_seconds        = 10
+          failure_threshold     = 24
+          tcp_socket {
+            port = 8080
+          }
+        }
+
+        liveness_probe {
+          http_get {
+            path = "/health"
+            port = 8080
+          }
+          initial_delay_seconds = 30
+          period_seconds        = 10
+          timeout_seconds       = 5
+          failure_threshold     = 3
         }
 
         resources {

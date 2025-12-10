@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { BookOpen, Layers, ClipboardList, Users, BarChart3, Settings, LogOut, Bell, Search, AlertTriangle, ChevronDown, Menu } from 'lucide-react';
 import useSettings from '../hooks/useSettings';
+import ChartBar from '../components/ChartBar';
+import ChartLine from '../components/ChartLine';
 
 const StatCard = ({ icon: Icon, label, value }) => (
   <div className="rounded-2xl bg-white shadow-xl shadow-navy/5 p-5 flex items-center gap-4">
@@ -59,6 +61,36 @@ const AdminDashboard = () => {
       </div>
     );
   }
+
+  // Monthly Borrowing Activity Chart
+  const monthlyLabels = (stats?.monthly_borrowings ?? []).map((m) => m.month_name);
+  const monthlyData = (stats?.monthly_borrowings ?? []).map((m) => m.total);
+  const monthlyChartData = {
+    labels: monthlyLabels,
+    datasets: [
+      {
+        label: 'Borrowings',
+        data: monthlyData,
+        fill: true,
+        backgroundColor: 'rgba(30,136,229,0.2)',
+        borderColor: '#1E88E5',
+        tension: 0.4,
+      },
+    ],
+  };
+  // Most Borrowed Categories Chart
+  const categoryLabels = (stats?.categories_stats ?? []).map((c) => c.category);
+  const categoryData = (stats?.categories_stats ?? []).map((c) => c.borrow_count);
+  const categoryChartData = {
+    labels: categoryLabels,
+    datasets: [
+      {
+        label: 'Borrowings',
+        data: categoryData,
+        backgroundColor: 'rgba(13,71,161,0.7)',
+      },
+    ],
+  };
 
   return (
     <>
@@ -162,40 +194,7 @@ const AdminDashboard = () => {
                 <h3 className="text-sm font-semibold text-slate-700">Monthly Borrowing Activity</h3>
               </div>
               <div className="rounded-2xl bg-[#EAF3FE] h-48 border border-slate-200 relative overflow-hidden">
-                <svg viewBox="0 0 400 160" className="w-full h-full">
-                  <defs>
-                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#1E88E5" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="#1E88E5" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id="lineStroke" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#1E88E5" />
-                      <stop offset="100%" stopColor="#0D47A1" />
-                    </linearGradient>
-                  </defs>
-                  {/* grid lines */}
-                  <g stroke="#D7E3F8" strokeWidth="1">
-                    <line x1="0" y1="140" x2="400" y2="140" />
-                    <line x1="0" y1="100" x2="400" y2="100" />
-                    <line x1="0" y1="60" x2="400" y2="60" />
-                    <line x1="0" y1="20" x2="400" y2="20" />
-                  </g>
-                  {/* area under line */}
-                  <polygon fill="url(#areaGrad)" points="0,120 60,80 120,95 180,60 240,70 300,40 360,55 400,35 400,160 0,160" />
-                  {/* line */}
-                  <polyline fill="none" stroke="url(#lineStroke)" strokeWidth="3" points="0,120 60,80 120,95 180,60 240,70 300,40 360,55 400,35" />
-                  {/* circles */}
-                  <g fill="#1E88E5" stroke="#fff" strokeWidth="2">
-                    <circle cx="0" cy="120" r="4" />
-                    <circle cx="60" cy="80" r="4" />
-                    <circle cx="120" cy="95" r="4" />
-                    <circle cx="180" cy="60" r="4" />
-                    <circle cx="240" cy="70" r="4" />
-                    <circle cx="300" cy="40" r="4" />
-                    <circle cx="360" cy="55" r="4" />
-                    <circle cx="400" cy="35" r="4" />
-                  </g>
-                </svg>
+                <ChartLine data={monthlyChartData} options={{responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}} height={160} />
               </div>
             </div>
             {/* Side-by-side, larger cards to fill space */}
@@ -204,10 +203,8 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-slate-700">Most Borrowed Categories</h3>
                 </div>
-                <div className="rounded-2xl bg-[#E3F2FD] h-56 md:h-64 border border-slate-200 grid grid-cols-6 items-end gap-2 md:gap-3 p-4 md:p-6">
-                  {[40,70,55,85,35,60].map((h,idx)=> (
-                    <div key={idx} className="bg-white rounded-lg shadow transition hover:scale-[1.02]" style={{height:`${h}%`, boxShadow:'0 6px 16px rgba(13,71,161,0.08)'}}></div>
-                  ))}
+                <div className="rounded-2xl bg-[#E3F2FD] h-56 md:h-64 border border-slate-200 grid grid-cols-1 items-end gap-2 md:gap-3 p-4 md:p-6">
+                  <ChartBar data={categoryChartData} options={{responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}} height={220} />
                 </div>
               </div>
               <div className="rounded-2xl bg-white shadow-xl shadow-navy/5 p-5">

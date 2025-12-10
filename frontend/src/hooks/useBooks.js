@@ -22,11 +22,18 @@ export function useBooks() {
     setLoading(true);
     setError(null);
     try {
-      const data = await BooksApi.list(queryParams);
-      const items = Array.isArray(data?.items) ? data.items : data;
-      setBooks(items || []);
-      setTotal(data?.total || items?.length || 0);
+      const response = await BooksApi.list(queryParams);
+      console.log('📚 Books API Response:', response);
+
+      // Backend returns: { success: true, data: { books: [...], pagination: {...} } }
+      const data = response.data || response;
+      const items = data.books || data.items || (Array.isArray(data) ? data : []);
+
+      console.log('📖 Parsed books:', items);
+      setBooks(items);
+      setTotal(data.pagination?.total || data.total || items.length);
     } catch (err) {
+      console.error('❌ Fetch books error:', err);
       setError(err);
       // Fallback demo data so UI tetap tampil ketika API bermasalah
       const demo = [
@@ -62,9 +69,17 @@ export function useBooks() {
   };
 
   const onCreate = async (payload) => {
-    await BooksApi.create(payload);
-    closeModal();
-    fetchBooks();
+    try {
+      const response = await BooksApi.create(payload);
+      console.log('✅ Book created:', response);
+      closeModal();
+      await fetchBooks(); // Wait for fetch to complete
+      alert('Book created successfully!');
+    } catch (error) {
+      console.error('❌ Create book error:', error);
+      // Re-throw error so modal can catch and display it
+      throw error;
+    }
   };
 
   const onUpdate = async (id, payload) => {
@@ -74,9 +89,16 @@ export function useBooks() {
   };
 
   const onDelete = async (id) => {
-    await BooksApi.remove(id);
-    setConfirmDelete(null);
-    fetchBooks();
+    try {
+      await BooksApi.remove(id);
+      setConfirmDelete(null);
+      await fetchBooks();
+      alert('Book deleted successfully!');
+    } catch (error) {
+      console.error('❌ Delete book error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete book';
+      alert(errorMessage);
+    }
   };
 
   const pagination = {

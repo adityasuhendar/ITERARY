@@ -53,10 +53,14 @@ const getBooks = async (req, res, next) => {
     const total = countResult[0].total;
 
     // Get books - using template literals for LIMIT/OFFSET instead of prepared statement params
+    // Default sort by created_at DESC (newest first) unless user specifies otherwise
+    const defaultSortField = sort ? sortField : 'created_at';
+    const sortDirection = sort ? 'ASC' : 'DESC';
+
     const booksQuery = `
       SELECT
         id, isbn, title, author, publisher, year_published, category,
-        total_copies, available_copies, cover_url, description,
+        total_copies, available_copies, description,
         CASE
           WHEN available_copies > 0 THEN 'Available'
           ELSE 'Not Available'
@@ -64,7 +68,7 @@ const getBooks = async (req, res, next) => {
         created_at, updated_at
       FROM books
       ${whereClause}
-      ORDER BY ${sortField} ASC
+      ORDER BY ${defaultSortField} ${sortDirection}, id DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
 
@@ -163,7 +167,7 @@ const createBook = async (req, res, next) => {
   try {
     const {
       isbn, title, author, publisher, year_published,
-      category, total_copies, available_copies, cover_url, description
+      category, total_copies, available_copies, description
     } = req.body;
 
     // Validate required fields
@@ -178,12 +182,12 @@ const createBook = async (req, res, next) => {
     const result = await query(
       `INSERT INTO books
        (isbn, title, author, publisher, year_published, category,
-        total_copies, available_copies, cover_url, description)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        total_copies, available_copies, description)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         isbn, title, author, publisher || null, year_published || null,
         category || 'General', total_copies || 1, available_copies || 1,
-        cover_url || null, description || null
+        description || null
       ]
     );
 
@@ -200,6 +204,23 @@ const createBook = async (req, res, next) => {
       }
     });
   } catch (error) {
+    console.error('Create book error:', error);
+
+    // Handle specific MySQL errors
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        success: false,
+        message: 'ISBN already exists in the database'
+      });
+    }
+
+    if (error.code === 'ER_DATA_TOO_LONG') {
+      return res.status(400).json({
+        success: false,
+        message: 'ISBN is too long. Maximum 20 characters allowed.'
+      });
+    }
+
     next(error);
   }
 };
@@ -210,7 +231,7 @@ const updateBook = async (req, res, next) => {
     const { id } = req.params;
     const {
       isbn, title, author, publisher, year_published,
-      category, total_copies, available_copies, cover_url, description
+      category, total_copies, available_copies, description
     } = req.body;
 
     // Check if book exists
@@ -234,7 +255,6 @@ const updateBook = async (req, res, next) => {
     if (category !== undefined) { updates.push('category = ?'); values.push(category); }
     if (total_copies !== undefined) { updates.push('total_copies = ?'); values.push(total_copies); }
     if (available_copies !== undefined) { updates.push('available_copies = ?'); values.push(available_copies); }
-    if (cover_url !== undefined) { updates.push('cover_url = ?'); values.push(cover_url); }
     if (description !== undefined) { updates.push('description = ?'); values.push(description); }
 
     if (updates.length === 0) {

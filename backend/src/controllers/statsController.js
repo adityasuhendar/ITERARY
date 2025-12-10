@@ -69,6 +69,31 @@ const getDashboardStats = async (req, res, next) => {
       LIMIT 5`
     );
 
+    // Get monthly borrowing activity (last 6 months)
+    const monthlyBorrowings = await query(
+      `SELECT
+        DATE_FORMAT(borrow_date, '%Y-%m') as month,
+        DATE_FORMAT(borrow_date, '%b %Y') as month_name,
+        COUNT(*) as total
+      FROM borrowings
+      WHERE borrow_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+      GROUP BY month, month_name
+      ORDER BY month ASC`
+    );
+
+    // Get most borrowed categories
+    const categoriesStats = await query(
+      `SELECT
+        bk.category,
+        COUNT(b.id) as borrow_count
+      FROM borrowings b
+      JOIN books bk ON b.book_id = bk.id
+      WHERE bk.category IS NOT NULL AND bk.category != ''
+      GROUP BY bk.category
+      ORDER BY borrow_count DESC
+      LIMIT 10`
+    );
+
     const stats = {
       total_books,
       total_available,
@@ -77,7 +102,9 @@ const getDashboardStats = async (req, res, next) => {
       active_borrowings,
       overdue_borrowings,
       recent_borrowings: recentBorrowings,
-      popular_books: popularBooks
+      popular_books: popularBooks,
+      monthly_borrowings: monthlyBorrowings,
+      categories_stats: categoriesStats
     };
 
     // Cache for 1 minute

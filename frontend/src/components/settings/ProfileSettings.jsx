@@ -36,45 +36,40 @@ function ProfileSettings({ data, loading, onSave }) {
   };
 
   return (
-    <div className="bg-white/95 backdrop-blur rounded-2xl shadow-lg shadow-blue-100 p-6">
-      <div className="flex items-start gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center">
-          <span className="material-icons">person</span>
-        </div>
-        <div>
-          <h3 className="text-xl font-semibold text-slate-900">Profile Settings</h3>
-          <p className="text-slate-600">Pengaturan identitas admin dan foto profil.</p>
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+        <input value={fullName} onChange={(e)=>setFullName(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+        <input value={username} onChange={(e)=>setUsername(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div className="flex flex-col gap-2 md:col-span-2 md:flex-row md:items-center">
+        <label className="block text-sm font-medium text-slate-700 mb-1 md:mb-0 md:w-40">Foto Profil</label>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-xl bg-blue-50 border-2 border-blue-200 flex items-center justify-center overflow-hidden">
+            {avatar ? (
+              <img src={URL.createObjectURL(avatar)} alt="Avatar preview" className="object-cover w-full h-full" />
+            ) : (
+              <span className="text-blue-400 text-2xl font-bold">A</span>
+            )}
+          </div>
+          <label className="inline-block px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-white cursor-pointer shadow-md hover:shadow-lg">
+            Pilih Gambar
+            <input type="file" accept="image/*" className="hidden" onChange={handleSelect} />
+          </label>
+          {avatar && <span className="text-sm text-slate-600">{avatar.name}</span>}
         </div>
       </div>
-
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
-          <input value={fullName} onChange={(e)=>setFullName(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
-          <input value={username} onChange={(e)=>setUsername(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-          <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-slate-700 mb-2">Foto Profil</label>
-          <div onDrop={handleDrop} onDragOver={(e)=>e.preventDefault()} className="border-2 border-dashed border-blue-300 rounded-2xl p-6 text-center bg-blue-50">
-            <p className="text-slate-700">Tarik & letakkan gambar ke sini, atau</p>
-            <label className="inline-block mt-3 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-white cursor-pointer">Pilih Gambar
-              <input type="file" accept="image/*" className="hidden" onChange={handleSelect} />
-            </label>
-            {avatar && <p className="mt-3 text-sm text-slate-600">Dipilih: {avatar.name}</p>}
-          </div>
-        </div>
-        <div className="md:col-span-2 flex justify-end">
-          <button type="submit" className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-white font-medium shadow-md hover:shadow-lg">Simpan Perubahan</button>
-        </div>
-      </form>
-    </div>
+      <div className="md:col-span-2 flex justify-end mt-4">
+        <button type="submit" className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-white font-medium shadow-md hover:shadow-lg">Simpan Perubahan</button>
+      </div>
+    </form>
   );
 }
 

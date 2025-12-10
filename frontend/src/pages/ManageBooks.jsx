@@ -9,10 +9,23 @@ import useBooks from '../hooks/useBooks';
 function ManageBooks() {
   const { books, loading, filters, pagination, modals, onCreate, onUpdate, onDelete } = useBooks();
 
-  const handleSubmitModal = ({ id, data }) => {
-    if (id) return onUpdate(id, data);
-    return onCreate(data);
-  };
+  const handleSubmitModal = async ({ id, data }) => {
+    try {
+      // Remove cover_url from data before sending to backend
+      const cleanData = { ...data };
+      if ('cover_url' in cleanData) delete cleanData.cover_url;
+      if (id) {
+        await onUpdate(id, cleanData);
+      } else {
+        await onCreate(cleanData);
+      }
+    } catch (error) {
+      // Extract error message from response
+      const errorMessage = error.response?.data?.message || 'Failed to save book';
+      alert(errorMessage);
+      throw error; // Re-throw so modal knows to stay open
+    }
+  }
 
   return (
     <div className="space-y-6 px-0 py-0">

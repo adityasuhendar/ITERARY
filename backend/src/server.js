@@ -24,8 +24,20 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Middleware
+const allowedOrigins = [
+  'https://iterary-frontend-889794700120.asia-southeast2.run.app',
+  'http://localhost:3000'
+];
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -85,17 +97,7 @@ app.use(errorHandler);
 // Start server
 const startServer = async () => {
   try {
-    // Test database connection
-    const dbConnected = await testConnection();
-    if (!dbConnected) {
-      console.error('Failed to connect to database. Exiting...');
-      process.exit(1);
-    }
-
-    // Initialize Redis (optional, can be disabled via REDIS_ENABLED=false)
-    initRedis();
-
-    // Start Express server
+    // Start Express server first (important for Cloud Run health checks)
     app.listen(PORT, () => {
       console.log('');
       console.log('='.repeat(50));
@@ -103,15 +105,37 @@ const startServer = async () => {
       console.log('='.repeat(50));
       console.log(`📡 Server: http://localhost:${PORT}`);
       console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`📚 Database: MySQL`);
-      const redisEnabled = process.env.REDIS_ENABLED === 'false' ? 'disabled' : (process.env.REDIS_HOST ? 'enabled' : 'disabled');
-      console.log(`⚡ Cache: Redis (${redisEnabled})`);
       console.log('='.repeat(50));
       console.log('');
     });
+
+    // Test database connection with retry logic (non-blocking)
+    let dbConnected = false;
+    let retries = 5;
+    while (!dbConnected && retries > 0) {
+      dbConnected = await testConnection();
+      if (!dbConnected) {
+        console.log(`⚠️  Database not ready. Retrying in 2 seconds... (${retries} attempts left)`);
+        retries--;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    if (dbConnected) {
+      console.log('📚 Database: MySQL (connected)');
+    } else {
+      console.warn('⚠️  Database: MySQL (connection failed, will retry on first request)');
+    }
+
+    // Initialize Redis (optional, can be disabled via REDIS_ENABLED=false)
+    initRedis();
+    const redisEnabled = process.env.REDIS_ENABLED === 'false' ? 'disabled' : (process.env.REDIS_HOST ? 'enabled' : 'disabled');
+    console.log(`⚡ Cache: Redis (${redisEnabled})`);
+    console.log('='.repeat(50));
+    console.log('');
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.error('Error during startup:', error);
+    // Don't exit, server might still work
   }
 };
 

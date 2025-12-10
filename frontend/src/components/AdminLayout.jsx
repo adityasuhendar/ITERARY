@@ -33,7 +33,7 @@ function AdminLayout({ children, hideTopbar = false }) {
           <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/settings') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/settings"><Settings className="h-5 w-5"/> Settings</Link>
         </nav>
         <div className="px-3 py-4 border-t border-white/10">
-          <a className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10" href="#"><LogOut className="h-5 w-5"/> Logout</a>
+          <a className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10" href="/logout"><LogOut className="h-5 w-5"/> Logout</a>
         </div>
       </aside>
 
@@ -74,9 +74,8 @@ function AdminLayout({ children, hideTopbar = false }) {
             )}
             {showProfile && (
               <div className="absolute right-0 top-12 w-52 rounded-2xl bg-white shadow-xl border border-slate-100 p-2 z-20">
-                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm" href="#">Profile</a>
-                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm" href="#">Settings</a>
-                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm text-red-600" href="#">Logout</a>
+                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm" href="/admin/settings">Settings</a>
+                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm text-red-600" href="/logout">Logout</a>
               </div>
             )}
           </div>

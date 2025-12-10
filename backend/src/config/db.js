@@ -1,19 +1,37 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
+// Cloud SQL connection configuration
+// In Cloud Run, use Unix socket; in local dev, use TCP
+const getDbConfig = () => {
+  const config = {
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'iterary',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
+  };
+
+  // Check if running in Cloud Run with Unix socket
+  if (process.env.DB_SOCKET_PATH || process.env.INSTANCE_UNIX_SOCKET) {
+    const socketPath = process.env.DB_SOCKET_PATH || process.env.INSTANCE_UNIX_SOCKET;
+    console.log('🔌 Using Cloud SQL Unix socket:', socketPath);
+    config.socketPath = socketPath;
+  } else {
+    // Local development or private IP connection
+    console.log('🔌 Using TCP connection to:', process.env.DB_HOST || 'localhost');
+    config.host = process.env.DB_HOST || 'localhost';
+    config.port = process.env.DB_PORT || 3306;
+  }
+
+  return config;
+};
+
 // Create connection pool
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'iterary',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0
-});
+const pool = mysql.createPool(getDbConfig());
 
 // Test connection
 const testConnection = async () => {

@@ -32,6 +32,7 @@ function BookTable({ books, loading, onView, onEdit, onDelete }) {
             <th className="px-4 py-3 text-left text-sm font-semibold text-[#0D47A1]">Cover</th>
             <th className="px-4 py-3 text-left text-sm font-semibold text-[#0D47A1]">Title</th>
             <th className="px-4 py-3 text-left text-sm font-semibold text-[#0D47A1]">Category</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-[#0D47A1]">Stock</th>
             <th className="px-4 py-3 text-left text-sm font-semibold text-[#0D47A1]">Availability</th>
             <th className="px-4 py-3 text-left text-sm font-semibold text-[#0D47A1]">Actions</th>
           </tr>

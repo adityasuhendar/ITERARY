@@ -5,7 +5,10 @@ require('dotenv').config();
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
+  console.log('🔐 Auth Header:', authHeader ? 'Present' : 'Missing');
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('❌ Auth failed: No Bearer token');
     return res.status(401).json({
       success: false,
       message: 'Authentication required',
@@ -17,9 +20,11 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('✅ Token verified for user:', decoded.username || decoded.email);
     req.user = decoded;
     next();
   } catch (error) {
+    console.log('❌ Token verification failed:', error.message);
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token',

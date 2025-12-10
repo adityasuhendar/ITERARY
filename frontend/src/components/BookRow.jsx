@@ -19,8 +19,13 @@ function BookRow({ book, onView, onEdit, onDelete, index }) {
       </td>
       <td className="px-4 py-3 text-gray-700">{book.category || '-'}</td>
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm ${book.total_copies > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-          {book.total_copies > 0 ? 'Available' : 'Unavailable'}
+        <span className="text-sm font-medium text-gray-900">
+          {book.available_copies ?? 0} / {book.total_copies ?? 0}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm ${(book.available_copies ?? 0) > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          {(book.available_copies ?? 0) > 0 ? 'Available' : 'Unavailable'}
         </span>
       </td>
       <td className="px-4 py-3">

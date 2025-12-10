@@ -108,11 +108,14 @@ const adminCreateBorrowing = async (req, res, next) => {
     }
 
     // Resolve member_id: allow passing NIM (members.member_id) or numeric primary key (members.id)
+    // Case-insensitive and trimmed for NIM
     let memberRow;
-    if (!isNaN(Number(member_id))) {
-      const rows = await query('SELECT * FROM members WHERE id = ?', [Number(member_id)]);
+    const trimmedMemberId = String(member_id).trim();
+
+    if (!isNaN(Number(trimmedMemberId))) {
+      const rows = await query('SELECT * FROM members WHERE id = ?', [Number(trimmedMemberId)]);
       if (rows.length === 0) {
-        const alt = await query('SELECT * FROM members WHERE member_id = ?', [member_id]);
+        const alt = await query('SELECT * FROM members WHERE TRIM(member_id) = ?', [trimmedMemberId]);
         if (alt.length === 0) {
           return res.status(404).json({ success: false, message: 'Member not found' });
         }
@@ -121,7 +124,7 @@ const adminCreateBorrowing = async (req, res, next) => {
         memberRow = rows[0];
       }
     } else {
-      const rows = await query('SELECT * FROM members WHERE member_id = ?', [member_id]);
+      const rows = await query('SELECT * FROM members WHERE TRIM(member_id) = ?', [trimmedMemberId]);
       if (rows.length === 0) {
         return res.status(404).json({ success: false, message: 'Member not found' });
       }
@@ -137,22 +140,24 @@ const adminCreateBorrowing = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Member has overdue books.' });
     }
 
-    // Resolve book: allow passing numeric id, ISBN, or title
+    // Resolve book: allow passing numeric id, ISBN, or title (case-insensitive, trimmed)
     let book;
-    if (!isNaN(Number(book_id))) {
-      const byId = await query('SELECT * FROM books WHERE id = ?', [Number(book_id)]);
+    const trimmedBookId = String(book_id).trim();
+
+    if (!isNaN(Number(trimmedBookId))) {
+      const byId = await query('SELECT * FROM books WHERE id = ?', [Number(trimmedBookId)]);
       if (byId.length > 0) {
         book = byId[0];
       }
     }
     if (!book) {
-      const byIsbn = await query('SELECT * FROM books WHERE isbn = ?', [book_id]);
+      const byIsbn = await query('SELECT * FROM books WHERE TRIM(isbn) = ?', [trimmedBookId]);
       if (byIsbn.length > 0) {
         book = byIsbn[0];
       }
     }
     if (!book) {
-      const byTitle = await query('SELECT * FROM books WHERE title = ?', [book_id]);
+      const byTitle = await query('SELECT * FROM books WHERE LOWER(TRIM(title)) = LOWER(?)', [trimmedBookId]);
       if (byTitle.length > 0) {
         book = byTitle[0];
       }

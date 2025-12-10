@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BooksApi } from '../api/booksApi';
 
 function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
   const [form, setForm] = useState({
@@ -7,9 +8,9 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
     category: '',
     isbn: '',
     total_copies: 1,
-    cover_url: '',
   });
   const [errors, setErrors] = useState({});
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     if (editingBook) {
@@ -19,12 +20,39 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
         category: editingBook.category || '',
         isbn: editingBook.isbn || '',
         total_copies: editingBook.total_copies ?? editingBook.totalCopies ?? 1,
-        cover_url: editingBook.cover_url || editingBook.coverUrl || '',
       });
     } else {
-      setForm({ title: '', author: '', category: '', isbn: '', total_copies: 1, cover_url: '' });
+      setForm({ title: '', author: '', category: '', isbn: '', total_copies: 1 });
     }
   }, [editingBook]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await BooksApi.getCategories();
+        console.log('📂 Categories API Response:', response);
+        const data = response.data || response;
+        // Backend returns: { success: true, data: [{id: 1, name: "Fiksi"}, ...] }
+        let categoryList = [];
+        if (Array.isArray(data)) {
+          categoryList = data.map(cat => cat.name || cat);
+        } else if (data.categories && Array.isArray(data.categories)) {
+          categoryList = data.categories;
+        } else {
+          categoryList = [];
+        }
+        console.log('📋 Parsed categories:', categoryList);
+        setCategories(categoryList);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        setCategories(['Fiction', 'Non-Fiction', 'Technology', 'History', 'Science', 'General']);
+      }
+    };
+
+    if (open) {
+      fetchCategories();
+    }
+  }, [open]);
 
   const validate = () => {
     const e = {};
@@ -41,13 +69,18 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
     setForm((f) => ({ ...f, [key]: key === 'total_copies' ? Number(value) : value }));
   };
 
-  const submitForm = (e) => {
+  const submitForm = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    if (editingBook?.id) {
-      onSubmit({ id: editingBook.id, data: form });
-    } else {
-      onSubmit({ data: form });
+    try {
+      if (editingBook?.id) {
+        await onSubmit({ id: editingBook.id, data: form });
+      } else {
+        await onSubmit({ data: form });
+      }
+    } catch (error) {
+      // Error is already handled by parent (ManageBooks), modal will stay open
+      console.error('Submit error:', error);
     }
   };
 
@@ -81,11 +114,16 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Category</label>
-            <input
+            <select
               value={form.category}
               onChange={(e) => handleChange('category', e.target.value)}
               className="mt-1 w-full rounded-lg border border-blue-200 bg-white/90 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+            >
+              <option value="">Select a category</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat}>{cat}</option>
+              ))}
+            </select>
             {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -110,14 +148,7 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
               {errors.total_copies && <p className="mt-1 text-sm text-red-600">{errors.total_copies}</p>}
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Cover Image URL</label>
-            <input
-              value={form.cover_url}
-              onChange={(e) => handleChange('cover_url', e.target.value)}
-              className="mt-1 w-full rounded-lg border border-blue-200 bg-white/90 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
+          {/* Cover Image URL field removed as requested */}
           <div className="mt-6 flex justify-end gap-3">
             <button type="button" onClick={onClose} className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50">
               Cancel
