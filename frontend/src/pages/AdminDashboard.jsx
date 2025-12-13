@@ -26,6 +26,8 @@ const AdminDashboard = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { settings: appSettings } = useSettings();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const formatDateSafe = (value) => {
     if (!value) return '-';
@@ -45,7 +47,41 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const response = await api.get('/api/stats/dashboard');
-      setStats(response.data.data);
+      const data = response.data.data;
+      setStats(data);
+
+      const newNotifs = [];
+      
+      if (data.overdue_borrowings > 0) {
+        newNotifs.push({
+          id: 'overdue',
+          type: 'danger',
+          message: `${data.overdue_borrowings} buku terlambat dikembalikan`,
+          link: '/admin/borrowings?status=overdue'
+        });
+      }
+
+      if (data.active_borrowings > 0) {
+        newNotifs.push({
+          id: 'active',
+          type: 'info',
+          message: `${data.active_borrowings} peminjaman sedang aktif`,
+          link: '/admin/borrowings'
+        });
+      }
+
+      if (data.total_available < (data.total_books * 0.1)) {
+        newNotifs.push({
+          id: 'stock',
+          type: 'warning',
+          message: 'Stok buku tersedia menipis!',
+          link: '/admin/books'
+        });
+      }
+
+      setNotifications(newNotifs);
+      setUnreadCount(newNotifs.length);
+
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
@@ -61,6 +97,7 @@ const AdminDashboard = () => {
     );
   }
 
+  // Monthly Borrowing Activity Chart (Line)
   const monthlyLabels = (stats?.monthly_borrowings ?? []).map((m) => m.month_name);
   const monthlyData = (stats?.monthly_borrowings ?? []).map((m) => m.total);
   const monthlyChartData = {
@@ -78,6 +115,7 @@ const AdminDashboard = () => {
     ],
   };
 
+  // Most Borrowed Categories Chart (Horizontal Bar)
   const categoryLabels = (stats?.categories_stats ?? []).map((c) => c.category);
   const categoryData = (stats?.categories_stats ?? []).map((c) => c.borrow_count);
   const categoryChartData = {
@@ -131,17 +169,60 @@ const AdminDashboard = () => {
         {/* Top Navbar */}
         <header className="relative z-50 mx-6 mt-6 rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <button className="md:hidden rounded-xl p-2 bg-blue-50" onClick={() => setMobileNavOpen(true)} aria-label="Open menu">
+            <button className="md:hidden rounded-xl p-2 bg-blue-50" onClick={() => setMobileNavOpen(true)}>
               <Menu className="h-5 w-5 text-blue-600" />
             </button>
             <h2 className="text-xl font-bold text-gray-800 ml-2 md:ml-0">Dashboard Admin</h2>
           </div>
           
           <div className="flex items-center gap-4 relative">
-            <button onClick={() => setShowNotifications((s)=>!s)} className="relative rounded-xl p-2 bg-gray-50 hover:bg-blue-50 transition text-gray-600 hover:text-blue-600">
+            <button 
+              onClick={() => setShowNotifications((s)=>!s)} 
+              className="relative rounded-xl p-2 bg-gray-50 hover:bg-blue-50 transition text-gray-600 hover:text-blue-600"
+            >
               <Bell className="h-6 w-6" />
-              <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
+              )}
             </button>
+
+            {/* Dropdown Notifikasi */}
+            {showNotifications && (
+              <div className="absolute right-16 top-14 w-80 rounded-xl bg-white shadow-lg border border-gray-100 p-0 z-50 animate-in fade-in slide-in-from-top-2 overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                  <h3 className="font-semibold text-sm text-gray-800">Notifikasi</h3>
+                  {unreadCount > 0 && (
+                    <button onClick={() => setUnreadCount(0)} className="text-xs text-blue-600 hover:underline">
+                      Tandai dibaca
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {notifications.length > 0 ? (
+                    notifications.map((notif, idx) => (
+                      <Link 
+                        key={idx} 
+                        to={notif.link}
+                        className="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition"
+                        onClick={() => setShowNotifications(false)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
+                            notif.type === 'danger' ? 'bg-red-500' : 
+                            notif.type === 'warning' ? 'bg-orange-500' : 'bg-blue-500'
+                          }`} />
+                          <p className="text-sm text-gray-600 leading-snug">{notif.message}</p>
+                        </div>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="px-4 py-6 text-center text-gray-400 text-sm">
+                      Tidak ada notifikasi baru
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             
             <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => setShowProfile((p)=>!p)}>
               <div className="text-right hidden md:block">
@@ -232,7 +313,7 @@ const AdminDashboard = () => {
                   options={{
                     responsive: true, 
                     maintainAspectRatio: false,
-                    indexAxis: 'y', // Horizontal Bar
+                    indexAxis: 'y',
                     plugins:{legend:{display:false}}, 
                     scales:{x:{beginAtZero:true}}
                   }} 
