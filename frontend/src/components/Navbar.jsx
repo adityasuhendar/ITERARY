@@ -12,7 +12,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-lg">
+    <nav className="bg-white shadow-lg sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -23,17 +23,17 @@ const Navbar = () => {
             <div className="hidden md:ml-10 md:flex md:space-x-8">
               <Link
                 to="/"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-primary-600"
+                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-primary-600 transition-colors"
               >
                 <Home className="h-4 w-4 mr-1" />
-                Home
+                Beranda
               </Link>
               <Link
                 to="/books"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-primary-600"
+                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-primary-600 transition-colors"
               >
                 <Library className="h-4 w-4 mr-1" />
-                Katalog
+                Katalog Buku
               </Link>
             </div>
           </div>
@@ -43,32 +43,32 @@ const Navbar = () => {
               <>
                 <Link
                   to={isAdmin ? '/admin/dashboard' : '/member/dashboard'}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-sm transition-all"
                 >
                   <User className="h-4 w-4 mr-2" />
-                  {isAdmin ? 'Admin Dashboard' : 'Dashboard'}
+                  {isAdmin ? 'Dashboard Admin' : 'Dashboard'}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  Keluar
                 </button>
               </>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-primary-600 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-primary-600 bg-primary-50 hover:bg-primary-100 transition-colors"
                 >
-                  Login
+                  Masuk
                 </Link>
                 <Link
                   to="/register"
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-sm transition-all"
                 >
-                  Register
+                  Daftar
                 </Link>
               </>
             )}
