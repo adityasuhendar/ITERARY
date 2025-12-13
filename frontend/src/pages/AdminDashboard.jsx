@@ -125,45 +125,48 @@ const AdminDashboard = () => {
       {/* Main area */}
       <div className="flex-1 flex flex-col">
         {/* Top Navbar */}
-        <header className="mx-3 md:mx-6 mt-6 rounded-2xl bg-white shadow-xl shadow-navy/5 px-3 md:px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3 w-[40%]">
+        <header className="relative z-50 mx-6 mt-6 rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <button className="md:hidden rounded-xl p-2 bg-blue-50" onClick={() => setMobileNavOpen(true)} aria-label="Open menu">
               <Menu className="h-5 w-5 text-blue-600" />
             </button>
-            <div className="hidden md:block rounded-xl p-2 bg-blue-50"><Search className="h-5 w-5 text-blue-600"/></div>
-            <input onFocus={() => setShowSearch(true)} className="hidden md:block w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" placeholder="Search books, members, reports..." />
+            <h2 className="text-xl font-bold text-gray-800 ml-2 md:ml-0">Dashboard Admin</h2>
           </div>
+          
           <div className="flex items-center gap-4 relative">
-            <button onClick={() => setShowNotifications((s)=>!s)} className="relative rounded-xl p-2 bg-blue-50 hover:shadow-md transition">
-              <Bell className="h-6 w-6 text-[#0D47A1]" />
-              <span className="absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full px-1">3</span>
+            <button onClick={() => setShowNotifications((s)=>!s)} className="relative rounded-xl p-2 bg-gray-50 hover:bg-blue-50 transition text-gray-600 hover:text-blue-600">
+              <Bell className="h-6 w-6" />
+              <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
+            
             <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => setShowProfile((p)=>!p)}>
-              <div className="text-right">
-                <div className="text-sm font-semibold text-slate-900">{appSettings?.profile?.fullName || 'Admin'}</div>
-                <div className="text-xs text-slate-500">Administrator</div>
+              <div className="text-right hidden md:block">
+                <div className="text-sm font-bold text-gray-900">{appSettings?.profile?.fullName || 'Administrator'}</div>
+                <div className="text-xs text-gray-500">Super Admin</div>
               </div>
-              <img src={appSettings?.profile?.avatar_url || 'https://i.pravatar.cc/40'} className="w-10 h-10 rounded-full shadow" alt="Admin"/>
-              <ChevronDown className="h-4 w-4 text-slate-500"/>
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border-2 border-white shadow-sm">
+                {appSettings?.profile?.fullName ? appSettings.profile.fullName.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <ChevronDown className="h-4 w-4 text-gray-400"/>
             </div>
-            {showNotifications && (
-              <div className="absolute right-20 top-12 w-80 rounded-2xl bg-white shadow-xl shadow-navy/10 border border-slate-100 p-3 z-20">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold">Notifications</div>
-                  <button className="text-xs text-blue-600">Mark all read</button>
-                </div>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50"><span className="w-2 h-2 rounded-full bg-red-500 mt-1"></span> 18 overdue borrowings require attention</li>
-                  <li className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50"><span className="w-2 h-2 rounded-full bg-yellow-500 mt-1"></span> 5 items due in next 48 hours</li>
-                  <li className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50"><span className="w-2 h-2 rounded-full bg-blue-500 mt-1"></span> New member registrations today: {stats?.new_members_today ?? 0}</li>
-                </ul>
-              </div>
-            )}
+
+            {/* Dropdown Profile */}
             {showProfile && (
-              <div className="absolute right-0 top-12 w-52 rounded-2xl bg-white shadow-xl shadow-navy/10 border border-slate-100 p-2 z-20">
-                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm" href="#">Profile</a>
-                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm" href="#">Settings</a>
-                <a className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-sm text-red-600" href="#">Logout</a>
+              <div className="absolute right-0 top-14 w-48 rounded-xl bg-white shadow-lg border border-gray-100 p-2 z-50 animate-in fade-in slide-in-from-top-2">
+                {/* Tambahan Menu Profile sesuai request */}
+                <Link to="/admin/settings" className="block px-4 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700 font-medium">
+                  Profile
+                </Link>
+                <Link to="/admin/settings" className="block px-4 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700 font-medium">
+                  Settings
+                </Link>
+                <div className="h-px bg-gray-100 my-1"></div>
+                <button 
+                  onClick={() => { localStorage.clear(); window.location.href='/login'; }}
+                  className="w-full text-left px-4 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600 font-medium"
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>
