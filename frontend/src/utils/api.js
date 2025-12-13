@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+console.log("DEBUG: API URL SEDANG DIGUNAKAN -> https://iterary-api-889794700120.asia-southeast2.run.app");
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+  baseURL: 'https://iterary-api-889794700120.asia-southeast2.run.app',
   headers: {
     'Content-Type': 'application/json',
   },
