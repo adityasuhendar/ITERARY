@@ -1,37 +1,48 @@
-
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import SystemSettings from '../components/settings/SystemSettings';
 import ProfileSettings from '../components/settings/ProfileSettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import useSettings from '../hooks/useSettings';
-
+import { useGlobalSettings } from '../context/SettingsContext';
+import { Settings as SettingsIcon, User, Lock } from 'lucide-react';
 
 function Settings() {
   const { settings, loading, actions } = useSettings();
+  const { refreshSettings } = useGlobalSettings();
   const [banner, setBanner] = useState(null);
   const [tab, setTab] = useState('system');
 
   const handleSystemSave = async (payload) => {
-    const ok = await actions.updateSystem(payload);
-    if (ok) {
-      setBanner('Pengaturan sistem berhasil disimpan');
-      setTimeout(() => setBanner(null), 2000);
+    try {
+      const ok = await actions.updateSystem(payload);
+      if (ok) {
+        setBanner('Pengaturan sistem berhasil disimpan');
+        refreshSettings(); // Refresh global settings
+        setTimeout(() => setBanner(null), 3000);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleProfileSave = async (payload) => {
-    const ok = await actions.updateProfile(payload);
-    if (ok) {
-      setBanner('Profil berhasil disimpan');
-      setTimeout(() => setBanner(null), 2000);
+    try {
+      const ok = await actions.updateProfile(payload);
+      if (ok) {
+        setBanner('Profil berhasil disimpan');
+        refreshSettings(); // Refresh global settings
+        setTimeout(() => setBanner(null), 3000);
+      }
+      return ok;
+    } catch (err) {
+      throw err;
     }
   };
 
-  // Tab config
   const tabs = [
-    { key: 'system', label: 'System', icon: 'settings' },
-    { key: 'profile', label: 'Profile', icon: 'person' },
-    { key: 'security', label: 'Security', icon: 'lock' },
+    { key: 'system', label: 'System', icon: SettingsIcon },
+    { key: 'profile', label: 'Profile', icon: User },
+    { key: 'security', label: 'Security', icon: Lock },
   ];
 
   return (
@@ -45,19 +56,22 @@ function Settings() {
         <div className="bg-white/95 backdrop-blur rounded-2xl shadow-xl border border-slate-100 p-8">
           {/* Tab Navigation */}
           <div className="flex gap-2 border-b border-slate-100 mb-8">
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                className={`py-3 px-6 text-left font-medium text-base transition-colors flex items-center gap-2 rounded-t-xl
-                  ${tab === t.key ? 'text-blue-700 border-b-2 border-blue-600 bg-blue-50' : 'text-slate-500 hover:text-blue-700'}`}
-                onClick={() => setTab(t.key)}
-                type="button"
-                style={{minWidth:120}}
-              >
-                <span className="material-icons text-base">{t.icon}</span>
-                {t.label}
-              </button>
-            ))}
+            {tabs.map((t) => {
+              const IconComponent = t.icon;
+              return (
+                <button
+                  key={t.key}
+                  className={`py-3 px-6 text-left font-medium text-base transition-colors flex items-center gap-2 rounded-t-xl
+                    ${tab === t.key ? 'text-blue-700 border-b-2 border-blue-600 bg-blue-50' : 'text-slate-500 hover:text-blue-700'}`}
+                  onClick={() => setTab(t.key)}
+                  type="button"
+                  style={{minWidth:120}}
+                >
+                  <IconComponent className="h-5 w-5" />
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
           {/* Tab Content */}
           <div className="pt-2">

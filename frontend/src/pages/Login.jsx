@@ -1,10 +1,10 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, Mail, Lock, AlertCircle } from 'lucide-react';
+import { BookOpen, Mail, Lock, AlertCircle, User } from 'lucide-react';
 
 const Login = () => {
-  const [loginType, setLoginType] = useState('member'); // 'member' or 'admin'
+  const [loginType, setLoginType] = useState('member');
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -30,17 +30,13 @@ const Login = () => {
 
     try {
       const user = await login(formData, loginType === 'member');
-
-      // Redirect based on role
       if (user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
         navigate('/member/dashboard');
       }
     } catch (err) {
-      // --- KODE DEBUG BARU UNTUK MELIHAT RESPON LENGKAP ---
       console.error("LOGIN FAILED:", err.response);
-      // ---------------------------------------------------
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
@@ -65,7 +61,6 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Login Type Selector */}
         <div className="flex rounded-md shadow-sm">
           <button
             type="button"
@@ -109,8 +104,12 @@ const Login = () => {
                 {loginType === 'admin' ? 'Username or Email' : 'Email'}
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  {loginType === 'admin' ? (
+                    <User className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  )}
                 </div>
                 <input
                   id="username"
@@ -119,7 +118,7 @@ const Login = () => {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
                   placeholder={loginType === 'admin' ? 'admin or admin@itera.ac.id' : 'your@email.com'}
                 />
               </div>
@@ -130,7 +129,7 @@ const Login = () => {
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
@@ -140,7 +139,7 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
                   placeholder="Enter your password"
                 />
               </div>

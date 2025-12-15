@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { BookOpen, Layers, ClipboardList, Users, BarChart3, Settings, LogOut, Bell, Search, AlertTriangle, ChevronDown, Menu } from 'lucide-react';
-import useSettings from '../hooks/useSettings';
+import { useGlobalSettings } from '../context/SettingsContext';
+import { useAuth } from '../context/AuthContext';
 import ChartBar from '../components/ChartBar';
 import ChartLine from '../components/ChartLine';
 
@@ -19,15 +20,22 @@ const StatCard = ({ icon: Icon, label, value, colorClass = "text-blue-600", bgCl
 );
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const { settings } = useGlobalSettings();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const { settings: appSettings } = useSettings();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Get settings data
+  const appName = settings?.system?.appName || 'ITERARY';
+  const logoUrl = settings?.system?.logo_url;
+  const profileName = settings?.profile?.fullName || 'Admin';
+  const avatarUrl = settings?.profile?.avatar_url;
 
   const formatDateSafe = (value) => {
     if (!value) return '-';
@@ -42,6 +50,11 @@ const AdminDashboard = () => {
     return d.toLocaleDateString('id-ID');
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   useEffect(() => { fetchStats(); }, []);
 
   const fetchStats = async () => {
@@ -51,7 +64,7 @@ const AdminDashboard = () => {
       setStats(data);
 
       const newNotifs = [];
-      
+
       if (data.overdue_borrowings > 0) {
         newNotifs.push({
           id: 'overdue',
@@ -137,11 +150,15 @@ const AdminDashboard = () => {
       <aside className="hidden md:flex w-72 text-white flex-col" style={{background:'#0D47A1'}}>
         <div className="px-6 py-5 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-              <span className="font-bold">IT</span>
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl.startsWith('/') ? `http://localhost:8080${logoUrl}` : logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-bold">{appName.substring(0, 2).toUpperCase()}</span>
+              )}
             </div>
             <div>
-              <div className="text-lg font-semibold">ITERARY</div>
+              <div className="text-lg font-semibold">{appName}</div>
               <div className="text-xs text-white/70">Admin Console</div>
             </div>
           </div>
@@ -155,8 +172,8 @@ const AdminDashboard = () => {
           <Link className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10 transition" to="/admin/settings"><Settings className="h-5 w-5"/> Pengaturan</Link>
         </nav>
         <div className="px-3 py-4 border-t border-white/10">
-          <button 
-            onClick={() => { localStorage.clear(); window.location.href='/login'; }}
+          <button
+            onClick={handleLogout}
             className="flex w-full items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10 text-left transition"
           >
             <LogOut className="h-5 w-5"/> Keluar
@@ -174,10 +191,10 @@ const AdminDashboard = () => {
             </button>
             <h2 className="text-xl font-bold text-gray-800 ml-2 md:ml-0">Dashboard Admin</h2>
           </div>
-          
+
           <div className="flex items-center gap-4 relative">
-            <button 
-              onClick={() => setShowNotifications((s)=>!s)} 
+            <button
+              onClick={() => setShowNotifications((s)=>!s)}
               className="relative rounded-xl p-2 bg-gray-50 hover:bg-blue-50 transition text-gray-600 hover:text-blue-600"
             >
               <Bell className="h-6 w-6" />
@@ -200,15 +217,15 @@ const AdminDashboard = () => {
                 <div className="max-h-64 overflow-y-auto">
                   {notifications.length > 0 ? (
                     notifications.map((notif, idx) => (
-                      <Link 
-                        key={idx} 
+                      <Link
+                        key={idx}
                         to={notif.link}
                         className="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition"
                         onClick={() => setShowNotifications(false)}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
-                            notif.type === 'danger' ? 'bg-red-500' : 
+                            notif.type === 'danger' ? 'bg-red-500' :
                             notif.type === 'warning' ? 'bg-orange-500' : 'bg-blue-500'
                           }`} />
                           <p className="text-sm text-gray-600 leading-snug">{notif.message}</p>
@@ -223,14 +240,18 @@ const AdminDashboard = () => {
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => setShowProfile((p)=>!p)}>
               <div className="text-right hidden md:block">
-                <div className="text-sm font-bold text-gray-900">{appSettings?.profile?.fullName || 'Administrator'}</div>
+                <div className="text-sm font-bold text-gray-900">{profileName}</div>
                 <div className="text-xs text-gray-500">Super Admin</div>
               </div>
-              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border-2 border-white shadow-sm">
-                {appSettings?.profile?.fullName ? appSettings.profile.fullName.charAt(0).toUpperCase() : 'A'}
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border-2 border-white shadow-sm overflow-hidden">
+                {avatarUrl ? (
+                  <img src={avatarUrl.startsWith('/') ? `http://localhost:8080${avatarUrl}` : avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{profileName.charAt(0).toUpperCase()}</span>
+                )}
               </div>
               <ChevronDown className="h-4 w-4 text-gray-400"/>
             </div>
@@ -241,8 +262,8 @@ const AdminDashboard = () => {
                 <Link to="/admin/settings" className="block px-4 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700 font-medium">Profile</Link>
                 <Link to="/admin/settings" className="block px-4 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700 font-medium">Settings</Link>
                 <div className="h-px bg-gray-100 my-1"></div>
-                <button 
-                  onClick={() => { localStorage.clear(); window.location.href='/login'; }}
+                <button
+                  onClick={handleLogout}
                   className="w-full text-left px-4 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600 font-medium"
                 >
                   Logout
@@ -254,69 +275,67 @@ const AdminDashboard = () => {
 
         {/* Content grid */}
         <main className="p-6 space-y-6">
-          {/* Stat cards Section - Grid 4 Kolom */}
+          {/* Stat cards Section */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard 
-              icon={BookOpen} 
-              label="Total Buku" 
-              value={stats?.total_books ?? 0} 
-              colorClass="text-blue-600" 
-              bgClass="bg-blue-100" 
+            <StatCard
+              icon={BookOpen}
+              label="Total Buku"
+              value={stats?.total_books ?? 0}
+              colorClass="text-blue-600"
+              bgClass="bg-blue-100"
             />
-            <StatCard 
-              icon={Users} 
-              label="Buku Tersedia" 
-              value={stats?.total_available ?? 0} 
-              colorClass="text-green-600" 
-              bgClass="bg-green-100" 
+            <StatCard
+              icon={Users}
+              label="Buku Tersedia"
+              value={stats?.total_available ?? 0}
+              colorClass="text-green-600"
+              bgClass="bg-green-100"
             />
-            <StatCard 
-              icon={ClipboardList} 
-              label="Peminjaman Aktif" 
-              value={stats?.active_borrowings ?? 0} 
-              colorClass="text-orange-600" 
-              bgClass="bg-orange-100" 
+            <StatCard
+              icon={ClipboardList}
+              label="Peminjaman Aktif"
+              value={stats?.active_borrowings ?? 0}
+              colorClass="text-orange-600"
+              bgClass="bg-orange-100"
             />
-            <StatCard 
-              icon={AlertTriangle} 
-              label="Terlambat (Overdue)" 
-              value={stats?.overdue_borrowings ?? 0} 
-              colorClass="text-red-600" 
-              bgClass="bg-red-100" 
+            <StatCard
+              icon={AlertTriangle}
+              label="Terlambat (Overdue)"
+              value={stats?.overdue_borrowings ?? 0}
+              colorClass="text-red-600"
+              bgClass="bg-red-100"
             />
           </section>
 
-          {/* Charts Section - Grid 3 Kolom */}
+          {/* Charts Section */}
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Monthly Chart */}
             <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4">Aktivitas Peminjaman Bulanan</h3>
               <div className="h-64 w-full">
-                <ChartLine 
-                  data={monthlyChartData} 
+                <ChartLine
+                  data={monthlyChartData}
                   options={{
-                    responsive: true, 
+                    responsive: true,
                     maintainAspectRatio: false,
-                    plugins:{legend:{display:false}}, 
+                    plugins:{legend:{display:false}},
                     scales:{y:{beginAtZero:true, grid:{borderDash:[4,4]}}, x:{grid:{display:false}}}
-                  }} 
+                  }}
                 />
               </div>
             </div>
 
-            {/* Categories Chart */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4">Kategori Populer</h3>
               <div className="h-64 w-full">
-                <ChartBar 
-                  data={categoryChartData} 
+                <ChartBar
+                  data={categoryChartData}
                   options={{
-                    responsive: true, 
+                    responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y',
-                    plugins:{legend:{display:false}}, 
+                    plugins:{legend:{display:false}},
                     scales:{x:{beginAtZero:true}}
-                  }} 
+                  }}
                 />
               </div>
             </div>
@@ -347,7 +366,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 text-gray-600">{formatDateSafe(b.created_at)}</td>
                       <td className="px-6 py-4 text-gray-600">{formatDateSafe(b.due_date)}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold 
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold
                           ${b.status === 'overdue' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                           {b.status || 'Active'}
                         </span>
@@ -371,8 +390,13 @@ const AdminDashboard = () => {
         <div className="absolute inset-0 bg-black/30" onClick={() => setMobileNavOpen(false)}></div>
         <div className="absolute left-0 top-0 h-full w-72 max-w-[80%] bg-[#0D47A1] text-white p-4 shadow-xl">
           <div className="flex justify-between items-center mb-6">
-            <span className="font-bold text-lg">ITERARY</span>
-            <button onClick={() => setMobileNavOpen(false)} className="p-2">✕</button>
+            <div className="flex items-center gap-2">
+              {logoUrl ? (
+                <img src={logoUrl.startsWith('/') ? `http://localhost:8080${logoUrl}` : logoUrl} alt="Logo" className="w-8 h-8 rounded object-cover" />
+              ) : null}
+              <span className="font-bold text-lg">{appName}</span>
+            </div>
+            <button onClick={() => setMobileNavOpen(false)} className="p-2 text-white/70 hover:text-white">✕</button>
           </div>
           <nav className="space-y-2">
             <Link to="/admin/dashboard" onClick={() => setMobileNavOpen(false)} className="block px-4 py-3 rounded-lg bg-white/10">Dashboard</Link>
