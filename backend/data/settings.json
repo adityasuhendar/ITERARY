@@ -1,0 +1,19 @@
+{
+  "system": {
+    "appName": "ITERARY",
+    "maxBooks": 4,
+    "borrowDurationDays": 7,
+    "maintenance": false,
+    "logo_url": "/api/uploads/logo_1765815386718.jpg",
+    "logo": null
+  },
+  "profile": {
+    "fullName": "Admin ITERARY",
+    "username": "admin",
+    "email": "admin@itera.ac.id",
+    "avatar_url": "/api/uploads/avatar_1765814552449.jpg"
+  },
+  "appearance": {
+    "themeIndex": 0
+  }
+}

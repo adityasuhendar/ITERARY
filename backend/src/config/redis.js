@@ -1,97 +1,115 @@
+﻿const Redis = require('ioredis');
 
-const Redis = require('ioredis');
-require('dotenv').config();
+let redisClient = null;
 
-let redis = null;
-
-// Initialize Redis connection (optional for local dev)
 const initRedis = () => {
-  // Allow disabling via env flag
+  // Check if Redis is explicitly disabled
   if (process.env.REDIS_ENABLED === 'false') {
-    console.log('⚡ Redis disabled by configuration');
+    console.log('Redis: Disabled via REDIS_ENABLED=false');
     return null;
   }
+
+  // Check if Redis host is configured
+  if (!process.env.REDIS_HOST) {
+    console.log('Redis: No REDIS_HOST configured, caching disabled');
+    return null;
+  }
+
   try {
-    redis = new Redis({
+    const redisConfig = {
       host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || undefined,
+      port: parseInt(process.env.REDIS_PORT) || 6379,
       retryStrategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
+        if (times > 3) {
+          console.log('Redis: Max retries reached, giving up');
+          return null;
+        }
+        return Math.min(times * 200, 2000);
       },
-      maxRetriesPerRequest: 3
+      maxRetriesPerRequest: 3,
+      enableReadyCheck: true,
+      connectTimeout: 5000,
+    };
+
+    if (process.env.REDIS_PASSWORD) {
+      redisConfig.password = process.env.REDIS_PASSWORD;
+    }
+
+    redisClient = new Redis(redisConfig);
+
+    redisClient.on('connect', () => {
+      console.log('Redis: Connected successfully');
     });
 
-    redis.on('connect', () => {
-      console.log('✅ Redis connected successfully');
+    redisClient.on('error', (err) => {
+      console.error('Redis Error:', err.message);
     });
 
-    redis.on('error', (err) => {
-      console.warn('⚠️  Redis connection error (running without cache):', err.message);
-      redis = null; // Disable redis if connection fails
+    redisClient.on('close', () => {
+      console.log('Redis: Connection closed');
     });
 
-    return redis;
+    return redisClient;
   } catch (error) {
-    console.warn('⚠️  Redis not available (running without cache)');
+    console.error('Redis initialization error:', error.message);
     return null;
   }
 };
 
-// Cache helper functions
+const getRedisClient = () => redisClient;
+
 const getCache = async (key) => {
-  if (!redis) return null;
+  if (!redisClient) return null;
   try {
-    const data = await redis.get(key);
+    const data = await redisClient.get(key);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('Redis get error:', error);
+    console.error('Redis get error:', error.message);
     return null;
   }
 };
 
-const setCache = async (key, value, expiresIn = 300) => {
-  if (!redis) return false;
+const setCache = async (key, data, ttlSeconds = 300) => {
+  if (!redisClient) return false;
   try {
-    await redis.setex(key, expiresIn, JSON.stringify(value));
+    await redisClient.setex(key, ttlSeconds, JSON.stringify(data));
     return true;
   } catch (error) {
-    console.error('Redis set error:', error);
+    console.error('Redis set error:', error.message);
     return false;
   }
 };
 
 const deleteCache = async (key) => {
-  if (!redis) return false;
+  if (!redisClient) return false;
   try {
-    await redis.del(key);
+    await redisClient.del(key);
     return true;
   } catch (error) {
-    console.error('Redis delete error:', error);
+    console.error('Redis delete error:', error.message);
     return false;
   }
 };
 
-const deleteCachePattern = async (pattern) => {
-  if (!redis) return false;
+const clearCachePattern = async (pattern) => {
+  if (!redisClient) return false;
   try {
-    const keys = await redis.keys(pattern);
+    const keys = await redisClient.keys(pattern);
     if (keys.length > 0) {
-      await redis.del(...keys);
+      await redisClient.del(...keys);
     }
     return true;
   } catch (error) {
-    console.error('Redis delete pattern error:', error);
+    console.error('Redis clear pattern error:', error.message);
     return false;
   }
 };
 
 module.exports = {
   initRedis,
+  getRedisClient,
   getCache,
   setCache,
   deleteCache,
-  deleteCachePattern,
-  redis: () => redis
+  clearCachePattern
 };

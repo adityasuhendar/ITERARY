@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+﻿import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { SettingsProvider } from './context/SettingsContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -18,6 +19,7 @@ import ManageCategories from './pages/ManageCategories';
 import Borrowings from './pages/Borrowings';
 import Members from './pages/Members';
 import Settings from './pages/Settings';
+
 function TestPage(){
   return (<div style={{padding:24}}><h1>Test Page</h1><p>Aplikasi berjalan. Routing OK.</p></div>);
 }
@@ -31,7 +33,6 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
       {showNavbar && <Navbar />}
-      {/* Full-bleed layout on admin pages: remove outer container/padding */}
       <div className={isAdminPath ? "min-h-screen" : "container mx-auto px-4 py-6"}>
       <Routes>
             {/* Public Routes */}
@@ -55,7 +56,6 @@ function AppLayout() {
               path="/admin/books"
               element={
                 <ProtectedRoute requireAdmin>
-                  {/* Hide topbar only for Manage Books */}
                   <AdminLayout hideTopbar>
                     <ManageBooks />
                   </AdminLayout>
@@ -121,11 +121,13 @@ function AppLayout() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <ErrorBoundary>
-          <AppLayout />
-        </ErrorBoundary>
-      </Router>
+      <SettingsProvider>
+        <Router>
+          <ErrorBoundary>
+            <AppLayout />
+          </ErrorBoundary>
+        </Router>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

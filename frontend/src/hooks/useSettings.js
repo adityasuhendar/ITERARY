@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { getSettings, updateSystemSettings, updateProfileSettings, updatePassword } from '../services/settingsService';
 
 export default function useSettings() {
@@ -19,6 +19,7 @@ export default function useSettings() {
         profile: data.profile || settings.profile,
       });
     } catch (e) {
+      console.error('Failed to load settings:', e);
       setError(e);
     } finally {
       setLoading(false);
@@ -28,15 +29,37 @@ export default function useSettings() {
   useEffect(() => { load(); }, []);
 
   const updateSystem = async (payload) => {
-    try { await updateSystemSettings(payload); await load(); return true; }
-    catch (e) { setError(e); return false; }
+    try {
+      await updateSystemSettings(payload);
+      await load();
+      return true;
+    } catch (e) {
+      console.error('Failed to update system settings:', e);
+      setError(e);
+      throw e;
+    }
   };
+
   const updateProfile = async (payload) => {
-    try { await updateProfileSettings(payload); await load(); return true; }
-    catch (e) { setError(e); return false; }
+    try {
+      await updateProfileSettings(payload);
+      await load();
+      return true;
+    } catch (e) {
+      console.error('Failed to update profile:', e);
+      setError(e);
+      throw e;
+    }
   };
+
   const changePassword = async (payload) => {
-    try { await updatePassword(payload); } catch (e) {}
+    try {
+      await updatePassword(payload);
+      return true;
+    } catch (e) {
+      console.error('Failed to update password:', e);
+      throw e;
+    }
   };
 
   const actions = useMemo(() => ({
