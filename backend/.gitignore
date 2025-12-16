@@ -37,3 +37,6 @@ build/
 # Temporary files
 tmp/
 temp/
+
+# Uploads (user generated content)
+uploads/
