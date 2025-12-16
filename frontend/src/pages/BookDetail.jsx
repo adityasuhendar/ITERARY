@@ -12,6 +12,7 @@ const BookDetail = () => {
   const [loading, setLoading] = useState(true);
   const [borrowing, setBorrowing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [durationDays, setDurationDays] = useState(7); // Default 7 days
 
   useEffect(() => {
     fetchBook();
@@ -46,6 +47,7 @@ const BookDetail = () => {
     try {
       await api.post('/api/borrowings', {
         book_id: book.id,
+        duration_days: durationDays,
       });
 
       setMessage({ type: 'success', text: 'Book borrowed successfully! Check your dashboard.' });
@@ -181,19 +183,38 @@ const BookDetail = () => {
                 </div>
               )}
 
-              {/* Borrow Button */}
+              {/* Borrow Section */}
               {isMember && (
-                <button
-                  onClick={handleBorrow}
-                  disabled={borrowing || book.available_copies === 0}
-                  className="w-full md:w-auto px-6 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {borrowing
-                    ? 'Processing...'
-                    : book.available_copies > 0
-                    ? 'Borrow This Book'
-                    : 'Currently Unavailable'}
-                </button>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+                      Borrowing Duration
+                    </label>
+                    <select
+                      id="duration"
+                      value={durationDays}
+                      onChange={(e) => setDurationDays(Number(e.target.value))}
+                      className="block w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value={7}>7 days (1 week)</option>
+                      <option value={14}>14 days (2 weeks)</option>
+                      <option value={21}>21 days (3 weeks)</option>
+                      <option value={30}>30 days (1 month)</option>
+                    </select>
+                  </div>
+                  
+                  <button
+                    onClick={handleBorrow}
+                    disabled={borrowing || book.available_copies === 0}
+                    className="w-full md:w-auto px-6 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {borrowing
+                      ? 'Processing...'
+                      : book.available_copies > 0
+                      ? 'Borrow This Book'
+                      : 'Currently Unavailable'}
+                  </button>
+                </div>
               )}
 
               {!isAuthenticated && (

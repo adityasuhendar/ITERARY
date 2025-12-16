@@ -136,6 +136,7 @@ const memberLogin = async (req, res, next) => {
           member_id: member.member_id,
           name: member.name,
           email: member.email,
+          role: 'member',
           member_type: member.member_type
         }
       }
@@ -187,14 +188,26 @@ const register = async (req, res, next) => {
       [member_id, full_name, email, phone || null, hashedPassword, member_type || 'student']
     );
 
+    // Generate token for auto-login after registration
+    const token = generateToken({
+      id: result.insertId,
+      member_id: member_id,
+      email: email,
+      role: 'member'
+    });
+
     res.status(201).json({
       success: true,
       message: 'Registration successful',
       data: {
-        id: result.insertId,
-        member_id,
-        name: full_name, // Kirim nama yang benar di response
-        email
+        token,
+        user: {
+          id: result.insertId,
+          member_id,
+          name: full_name,
+          email,
+          role: 'member'
+        }
       }
     });
   } catch (error) {

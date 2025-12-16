@@ -111,5 +111,6 @@ module.exports = {
   getCache,
   setCache,
   deleteCache,
-  clearCachePattern
+  clearCachePattern,
+  deleteCachePattern: clearCachePattern // Alias untuk backward compatibility
 };
