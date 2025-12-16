@@ -175,7 +175,12 @@ function AdminLayout({ children, hideTopbar = false }) {
               </div>
               <div className="w-10 h-10 rounded-full shadow overflow-hidden bg-blue-100 flex items-center justify-center">
                 {avatarUrl ? (
-                  <img src={avatarUrl.startsWith('/') ? `http://localhost:8080${avatarUrl}` : avatarUrl} className="w-full h-full object-cover" alt="Admin"/>
+                  <img 
+                    src={avatarUrl.startsWith('http') ? avatarUrl : `${window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://iterary-api-889794700120.asia-southeast2.run.app'}${avatarUrl}`} 
+                    className="w-full h-full object-cover" 
+                    alt="Admin"
+                    key={avatarUrl}
+                  />
                 ) : (
                   <span className="text-blue-600 font-semibold">{profileName.charAt(0).toUpperCase()}</span>
                 )}
