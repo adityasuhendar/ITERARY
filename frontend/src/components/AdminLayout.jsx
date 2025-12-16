@@ -52,7 +52,12 @@ function AdminLayout({ children, hideTopbar = false }) {
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {logoUrl ? (
-                  <img src={logoUrl.startsWith('/') ? `http://localhost:8080${logoUrl}` : logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                  <img 
+                    src={logoUrl.startsWith('http') ? logoUrl : `${window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://iterary-api-889794700120.asia-southeast2.run.app'}${logoUrl}`} 
+                    alt="Logo" 
+                    className="w-full h-full object-cover"
+                    key={logoUrl}
+                  />
                 ) : (
                   <span className="font-bold">{appName.substring(0, 2).toUpperCase()}</span>
                 )}
