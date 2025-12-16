@@ -1,7 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { registerSW } from 'virtual:pwa-register'
 import App from './App.jsx'
 import './index.css'
+
+// Register service worker for PWA install prompt
+registerSW({ immediate: true })
 
 try {
   const rootEl = document.getElementById('root');
