@@ -52,12 +52,12 @@ const Login = () => {
             <BookOpen className="h-12 w-12 text-primary-600" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Sign in to ITERARY
+            Masuk ke ITERARY
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Or{' '}
+            Atau{' '}
             <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-              create a new account
+              buat akun baru
             </Link>
           </p>
         </div>
@@ -72,7 +72,7 @@ const Login = () => {
                 : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
             }`}
           >
-            Member Login
+            Login Member
           </button>
           <button
             type="button"
@@ -83,7 +83,7 @@ const Login = () => {
                 : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
             }`}
           >
-            Admin Login
+            Login Admin
           </button>
         </div>
 
