@@ -1,6 +1,18 @@
 ﻿import { useEffect, useState } from 'react';
 import { User, Mail, AtSign, Camera, Save, Loader2 } from 'lucide-react';
 
+// Helper function to get full avatar URL
+const getAvatarUrl = (avatarPath) => {
+  if (!avatarPath) return null;
+  if (avatarPath.startsWith('http')) return avatarPath;
+  
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:8080'
+    : 'https://iterary-api-889794700120.asia-southeast2.run.app';
+  
+  return `${API_URL}${avatarPath}`;
+};
+
 function ProfileSettings({ data, loading, onSave }) {
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
@@ -17,7 +29,7 @@ function ProfileSettings({ data, loading, onSave }) {
       setUsername(data.username || '');
       setEmail(data.email || '');
       if (data.avatar_url) {
-        setAvatarPreview(data.avatar_url);
+        setAvatarPreview(getAvatarUrl(data.avatar_url));
       }
     }
   }, [data]);
