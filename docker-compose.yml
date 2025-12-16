@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: iterary-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: iterary
+      MYSQL_USER: iterary_user
+      MYSQL_PASSWORD: iterary_pass
+    volumes:
+      - ./iterary-schema-mysql.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+
+  backend:
+    build: ./backend
+    container_name: iterary-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: iterary_user
+      DB_PASSWORD: iterary_pass
+      DB_NAME: iterary
+      DB_PORT: 3306
+      PORT: 8080
+      NODE_ENV: development
+      JWT_SECRET: "change_me_replace_with_strong_secret"
+      JWT_EXPIRES_IN: "7d"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    working_dir: /app
+
+  frontend:
+    build: ./frontend
+    container_name: iterary-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: "http://localhost:8080"
+    ports:
+      - "3000:80"
+    working_dir: /app

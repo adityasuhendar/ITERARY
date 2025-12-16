@@ -3,7 +3,8 @@ import api from '../utils/api';
 export const BooksApi = {
   list: async (params = {}) => {
     const { page = 1, pageSize = 10, search = '', category = '' } = params;
-    const res = await api.get('/api/books', { params: { page, pageSize, search, category } });
+    // Backend expects `limit` parameter for page size
+    const res = await api.get('/api/books', { params: { page, limit: pageSize, search, category } });
     return res.data;
   },
   getById: async (id) => {
