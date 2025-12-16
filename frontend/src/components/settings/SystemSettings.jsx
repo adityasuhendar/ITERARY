@@ -22,7 +22,10 @@ function SystemSettings({ data, loading, onSave }) {
       setMaintenance(Boolean(data.maintenance));
       // Set existing logo preview
       if (data.logo_url) {
-        const url = data.logo_url.startsWith('/') ? `http://localhost:8080${data.logo_url}` : data.logo_url;
+        const API_URL = window.location.hostname === 'localhost'
+          ? 'http://localhost:8080'
+          : 'https://iterary-api-889794700120.asia-southeast2.run.app';
+        const url = data.logo_url.startsWith('/') ? `${API_URL}${data.logo_url}` : data.logo_url;
         setLogoPreview(url);
       }
     }
@@ -33,8 +36,11 @@ function SystemSettings({ data, loading, onSave }) {
     setHealthLoading(true);
     setHealthError(null);
     try {
+      const API_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost:8080'
+        : 'https://iterary-api-889794700120.asia-southeast2.run.app';
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/settings/health', {
+      const response = await fetch(`${API_URL}/api/settings/health`, {
         headers: {
           'Authorization': 'Bearer ' + token,
           'Content-Type': 'application/json'
