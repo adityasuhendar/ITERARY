@@ -27,10 +27,23 @@ function AdminLayout({ children, hideTopbar = false }) {
   const avatarUrl = settings?.profile?.avatar_url;
 
   return (
-    <div className="min-h-screen bg-[#E3F2FD] text-slate-800 flex">
+    <div className="min-h-screen bg-[#E3F2FD] text-slate-800 flex overflow-x-hidden">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
       <aside 
-        className={`${sidebarOpen ? 'w-72' : 'w-20'} text-white flex flex-col transition-all duration-300`} 
+        className={`
+          ${sidebarOpen ? 'w-72' : 'w-20'} 
+          text-white flex flex-col transition-all duration-300
+          fixed lg:relative inset-y-0 left-0 z-30
+          ${!sidebarOpen ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}
+        `} 
         style={{background:'#0D47A1'}}
       >
         {/* Header with Logo */}
@@ -127,15 +140,25 @@ function AdminLayout({ children, hideTopbar = false }) {
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full lg:w-auto overflow-x-hidden">
         {/* Top Navbar (optional) */}
         {!hideTopbar && (
-        <header className="mx-6 mt-6 rounded-2xl bg-white shadow-xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3 w-[40%]">
-            <div className="rounded-xl p-2 bg-blue-50"><Search className="h-5 w-5 text-blue-600"/></div>
-            <input className="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" placeholder="Search books, members, reports..." />
+        <header className="mx-4 lg:mx-6 mt-6 rounded-2xl bg-white shadow-xl px-3 lg:px-4 py-3 flex items-center justify-between flex-wrap gap-3">
+          {/* Mobile Menu Toggle - Integrated in navbar */}
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 bg-[#0D47A1] text-white rounded-lg shadow"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
+          
+          <div className="flex items-center gap-3 w-full lg:w-[40%] order-2 lg:order-1">
+            <div className="rounded-xl p-2 bg-blue-50 hidden sm:flex"><Search className="h-5 w-5 text-blue-600"/></div>
+            <input className="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5] text-sm" placeholder="Search..." />
           </div>
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-2 lg:gap-4 relative order-1 lg:order-2">
             <button onClick={() => setShowNotifications((s)=>!s)} className="relative rounded-xl p-2 bg-blue-50 hover:shadow-md transition">
               <Bell className="h-6 w-6 text-[#0D47A1]" />
               <span className="absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full px-1">3</span>
@@ -175,6 +198,18 @@ function AdminLayout({ children, hideTopbar = false }) {
             )}
           </div>
         </header>
+        )}
+
+        {/* Mobile Menu Toggle for pages without topbar */}
+        {hideTopbar && !sidebarOpen && (
+          <div className="lg:hidden mx-4 mt-6 mb-2">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 bg-[#0D47A1] text-white rounded-lg shadow"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
         )}
 
         {/* Page content */}
