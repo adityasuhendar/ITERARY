@@ -73,7 +73,7 @@ function ManageBooks() {
         </button>
         <div className="text-gray-600">Page {pagination.page}</div>
         <button
-          disabled={books.length < pagination.pageSize}
+          disabled={pagination.page * pagination.pageSize >= pagination.total}
           onClick={() => pagination.setPage(pagination.page + 1)}
           className="rounded-lg border border-blue-200 bg-white px-3 py-1 text-[#0D47A1] disabled:opacity-50"
         >

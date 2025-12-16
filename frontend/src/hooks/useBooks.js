@@ -8,7 +8,7 @@ export function useBooks() {
   const [error, setError] = useState(null);
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
 
