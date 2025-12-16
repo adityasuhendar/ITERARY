@@ -60,7 +60,7 @@ function AdminLayout({ children, hideTopbar = false }) {
               {sidebarOpen && (
                 <div className="transition-opacity duration-300">
                   <div className="text-lg font-semibold">{appName}</div>
-                  <div className="text-xs text-white/70">Admin Console</div>
+                  <div className="text-xs text-white/70">Konsol Admin</div>
                 </div>
               )}
             </div>
@@ -87,42 +87,42 @@ function AdminLayout({ children, hideTopbar = false }) {
           <Link 
             className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/books') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
             to="/admin/books"
-            title={!sidebarOpen ? "Manage Books" : ""}
+            title={!sidebarOpen ? "Kelola Buku" : ""}
           >
             <BookOpen className="h-5 w-5 flex-shrink-0"/> 
-            {sidebarOpen && <span>Manage Books</span>}
+            {sidebarOpen && <span>Kelola Buku</span>}
           </Link>
           <Link 
             className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/categories') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
             to="/admin/categories"
-            title={!sidebarOpen ? "Manage Categories" : ""}
+            title={!sidebarOpen ? "Kelola Kategori" : ""}
           >
             <Layers className="h-5 w-5 flex-shrink-0"/> 
-            {sidebarOpen && <span>Manage Categories</span>}
+            {sidebarOpen && <span>Kelola Kategori</span>}
           </Link>
           <Link 
             className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/borrowings') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
             to="/admin/borrowings"
-            title={!sidebarOpen ? "Borrowings" : ""}
+            title={!sidebarOpen ? "Peminjaman" : ""}
           >
             <ClipboardList className="h-5 w-5 flex-shrink-0"/> 
-            {sidebarOpen && <span>Borrowings</span>}
+            {sidebarOpen && <span>Peminjaman</span>}
           </Link>
           <Link 
             className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/members') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
             to="/admin/members"
-            title={!sidebarOpen ? "Members" : ""}
+            title={!sidebarOpen ? "Anggota" : ""}
           >
             <Users className="h-5 w-5 flex-shrink-0"/> 
-            {sidebarOpen && <span>Members</span>}
+            {sidebarOpen && <span>Anggota</span>}
           </Link>
           <Link 
             className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/settings') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
             to="/admin/settings"
-            title={!sidebarOpen ? "Settings" : ""}
+            title={!sidebarOpen ? "Pengaturan" : ""}
           >
             <Settings className="h-5 w-5 flex-shrink-0"/> 
-            {sidebarOpen && <span>Settings</span>}
+            {sidebarOpen && <span>Pengaturan</span>}
           </Link>
         </nav>
 
