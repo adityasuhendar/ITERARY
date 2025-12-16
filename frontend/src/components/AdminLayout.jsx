@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, BookOpen, Layers, ClipboardList, Users, Settings, LogOut, Bell, Search, ChevronDown } from 'lucide-react';
+import { BarChart3, BookOpen, Layers, ClipboardList, Users, Settings, LogOut, Bell, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useGlobalSettings } from '../context/SettingsContext';
 
@@ -11,6 +11,7 @@ function AdminLayout({ children, hideTopbar = false }) {
   const { settings } = useGlobalSettings();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isActive = (path) => location.pathname === path;
 
@@ -28,33 +29,99 @@ function AdminLayout({ children, hideTopbar = false }) {
   return (
     <div className="min-h-screen bg-[#E3F2FD] text-slate-800 flex">
       {/* Sidebar */}
-      <aside className="w-72 text-white flex flex-col" style={{background:'#0D47A1'}}>
+      <aside 
+        className={`${sidebarOpen ? 'w-72' : 'w-20'} text-white flex flex-col transition-all duration-300`} 
+        style={{background:'#0D47A1'}}
+      >
+        {/* Header with Logo */}
         <div className="px-6 py-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
-              {logoUrl ? (
-                <img src={logoUrl.startsWith('/') ? `http://localhost:8080${logoUrl}` : logoUrl} alt="Logo" className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-bold">{appName.substring(0, 2).toUpperCase()}</span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {logoUrl ? (
+                  <img src={logoUrl.startsWith('/') ? `http://localhost:8080${logoUrl}` : logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-bold">{appName.substring(0, 2).toUpperCase()}</span>
+                )}
+              </div>
+              {sidebarOpen && (
+                <div className="transition-opacity duration-300">
+                  <div className="text-lg font-semibold">{appName}</div>
+                  <div className="text-xs text-white/70">Admin Console</div>
+                </div>
               )}
             </div>
-            <div>
-              <div className="text-lg font-semibold">{appName}</div>
-              <div className="text-xs text-white/70">Admin Console</div>
-            </div>
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              title={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
+            >
+              {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/dashboard') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/dashboard"><BarChart3 className="h-5 w-5"/> Dashboard</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/books') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/books"><BookOpen className="h-5 w-5"/> Manage Books</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/categories') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/categories"><Layers className="h-5 w-5"/> Manage Categories</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/borrowings') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/borrowings"><ClipboardList className="h-5 w-5"/> Borrowings</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/members') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/members"><Users className="h-5 w-5"/> Members</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/settings') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/settings"><Settings className="h-5 w-5"/> Settings</Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/dashboard') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/dashboard"
+            title={!sidebarOpen ? "Dashboard" : ""}
+          >
+            <BarChart3 className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Dashboard</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/books') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/books"
+            title={!sidebarOpen ? "Manage Books" : ""}
+          >
+            <BookOpen className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Manage Books</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/categories') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/categories"
+            title={!sidebarOpen ? "Manage Categories" : ""}
+          >
+            <Layers className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Manage Categories</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/borrowings') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/borrowings"
+            title={!sidebarOpen ? "Borrowings" : ""}
+          >
+            <ClipboardList className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Borrowings</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/members') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/members"
+            title={!sidebarOpen ? "Members" : ""}
+          >
+            <Users className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Members</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/settings') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/settings"
+            title={!sidebarOpen ? "Settings" : ""}
+          >
+            <Settings className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Settings</span>}
+          </Link>
         </nav>
+
+        {/* Logout */}
         <div className="px-3 py-4 border-t border-white/10">
-          <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10 w-full text-left">
-            <LogOut className="h-5 w-5"/> Logout
+          <button 
+            onClick={handleLogout} 
+            className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10 w-full text-left"
+            title={!sidebarOpen ? "Logout" : ""}
+          >
+            <LogOut className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Logout</span>}
           </button>
         </div>
       </aside>
