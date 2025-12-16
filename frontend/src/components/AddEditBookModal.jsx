@@ -87,19 +87,19 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl animate-fadeIn">
-        <h3 className="text-lg font-semibold text-[#0D47A1]">
+      <div className="relative w-full max-w-lg rounded-xl bg-white p-4 md:p-6 shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
+        <h3 className="text-base md:text-lg font-semibold text-[#0D47A1]">
           {editingBook ? 'Edit Book' : 'Add New Book'}
         </h3>
-        <form onSubmit={submitForm} className="mt-4 space-y-4">
+        <form onSubmit={submitForm} className="mt-3 md:mt-4 space-y-3 md:space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Title</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700">Title</label>
             <input
               value={form.title}
               onChange={(e) => handleChange('title', e.target.value)}
-              className="mt-1 w-full rounded-lg border border-blue-200 bg-white/90 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="mt-1 w-full rounded-lg border border-blue-200 bg-white/90 px-2 md:px-3 py-1.5 md:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
             {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
           </div>
