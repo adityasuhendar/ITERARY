@@ -1,0 +1,16 @@
+{
+  "masuk": "Masuk ke ITERARY",
+  "create_account": "Buat akun baru",
+  "login_member": "Login Member",
+  "login_admin": "Login Admin",
+  "username_or_email": "Username atau Email",
+  "password": "Password",
+  "sign_in": "Masuk",
+  "demo_credentials": "Demo: admin / admin123",
+  "manage_books": "Kelola Buku",
+  "add_new_book": "Tambah Buku Baru",
+  "dashboard": "Dashboard",
+  "dashboard_admin": "Dashboard Admin",
+  "sign_out": "Keluar",
+  "search_placeholder": "Cari buku berdasarkan judul, penulis, atau ISBN"
+}

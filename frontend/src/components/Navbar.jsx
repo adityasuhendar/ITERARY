@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BookOpen, LogOut, User, Home, Library, Menu, X } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated, isAdmin, isMember } = useAuth();
@@ -13,6 +15,7 @@ const Navbar = () => {
     navigate('/');
     setIsOpen(false);
   };
+  const { t } = useTranslation();
 
 return (
     <nav className="bg-white shadow-lg sticky top-0 z-40">
@@ -51,14 +54,14 @@ return (
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-sm transition-all"
                 >
                   <User className="h-4 w-4 mr-2" />
-                  {isAdmin ? 'Dashboard Admin' : 'Dashboard'}
+                  {isAdmin ? (t ? t('manage_books') : 'Dashboard Admin') : (t ? t('manage_books') : 'Dashboard')}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Keluar
+                  {t ? t('sign_out') : 'Keluar'}
                 </button>
               </>
             ) : (
@@ -67,16 +70,19 @@ return (
                   to="/login"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-primary-600 bg-primary-50 hover:bg-primary-100 transition-colors"
                 >
-                  Masuk
+                  {t ? t('masuk') : 'Masuk'}
                 </Link>
                 <Link
                   to="/register"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-sm transition-all"
                 >
-                  Daftar
+                  {t ? t('create_account') : 'Daftar'}
                 </Link>
               </>
             )}
+            <div className="ml-2">
+              <LanguageSwitcher />
+            </div>
           </div>
 
           <div className="flex items-center md:hidden">

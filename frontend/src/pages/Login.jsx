@@ -2,6 +2,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BookOpen, Mail, Lock, AlertCircle, User, Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
   const [loginType, setLoginType] = useState('member');
@@ -15,6 +16,7 @@ const Login = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleChange = (e) => {
     setFormData({
@@ -47,17 +49,26 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
+          <div className="text-center">
           <div className="flex justify-center">
             <BookOpen className="h-12 w-12 text-primary-600" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Masuk ke ITERARY
+            {t('masuk')}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Atau{' '}
+            {t('create_account').startsWith('Create') ? (
+              <>
+                {t('create_account')}
+              </>
+            ) : (
+              <>
+                {t('create_account')}
+              </>
+            )}
+            {' '} 
             <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-              buat akun baru
+              {t('create_account')}
             </Link>
           </p>
         </div>
@@ -102,7 +113,7 @@ const Login = () => {
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                {loginType === 'admin' ? 'Username or Email' : 'Email'}
+                {loginType === 'admin' ? t('username_or_email') : t('username_or_email')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
@@ -120,14 +131,14 @@ const Login = () => {
                   value={formData.username}
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
-                  placeholder={loginType === 'admin' ? 'admin or admin@itera.ac.id' : 'your@email.com'}
+                  placeholder={loginType === 'admin' ? 'admin or admin@itera.ac.id' : t('search_placeholder')}
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                {t('password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
@@ -164,13 +175,13 @@ const Login = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('signing') || 'Signing in...' : t('sign_in')}
             </button>
           </div>
 
           {loginType === 'admin' && (
             <p className="text-xs text-center text-gray-500">
-              Demo: admin / admin123
+              {t('demo_credentials')}
             </p>
           )}
         </form>
