@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import { BookOpen, Calendar, User, Package, AlertCircle, CheckCircle } from 'lucide-react';
+import { BookOpen, Calendar, User, Package, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const BookDetail = () => {
   const { id } = useParams();
@@ -88,6 +88,15 @@ const BookDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          <span>Kembali</span>
+        </button>
+
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="md:flex">
             {/* Book Cover */}
