@@ -28,12 +28,19 @@ function AppLayout() {
   const location = useLocation();
   const adminPaths = ['/admin/dashboard', '/admin/books', '/admin/categories', '/admin/borrowings', '/admin/members', '/admin/settings'];
   const isAdminPath = adminPaths.includes(location.pathname);
+  const fullWidthPaths = ['/'];
+  const isFullWidth = fullWidthPaths.includes(location.pathname);
+  const containerClass = isAdminPath
+    ? 'min-h-screen'
+    : isFullWidth
+      ? 'w-full min-h-screen'
+      : 'container mx-auto px-4 py-6';
   const showNavbar = !isAdminPath;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {showNavbar && <Navbar />}
-      <div className={isAdminPath ? "min-h-screen" : "container mx-auto px-4 py-6"}>
+      <div className={containerClass}>
       <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
