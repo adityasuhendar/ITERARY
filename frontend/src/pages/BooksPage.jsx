@@ -129,9 +129,9 @@ const BooksPage = () => {
                   className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
                 >
                   <div className="aspect-w-3 aspect-h-4 bg-gray-200">
-                    {book.cover_image_url ? (
+                    {book.cover_url ? (
                       <img
-                        src={book.cover_image_url}
+                        src={book.cover_url}
                         alt={book.title}
                         className="w-full h-48 object-cover"
                       />

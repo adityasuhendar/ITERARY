@@ -143,14 +143,14 @@ const BookDetail = () => {
                   <Package className="h-5 w-5 mr-3 text-gray-400" />
                   <span>ISBN: {book.isbn}</span>
                 </div>
-                <div className="flex items-center text-gray-700">
+                {/* <div className="flex items-center text-gray-700">
                   <User className="h-5 w-5 mr-3 text-gray-400" />
                   <span>Publisher: {book.publisher || 'N/A'}</span>
-                </div>
-                <div className="flex items-center text-gray-700">
+                </div> */}
+                {/* <div className="flex items-center text-gray-700">
                   <Calendar className="h-5 w-5 mr-3 text-gray-400" />
                   <span>Published: {book.publication_year || 'N/A'}</span>
-                </div>
+                </div> */}
                 <div className="flex items-center text-gray-700">
                   <BookOpen className="h-5 w-5 mr-3 text-gray-400" />
                   <span>
