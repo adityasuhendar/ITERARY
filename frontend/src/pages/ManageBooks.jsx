@@ -12,8 +12,9 @@ function ManageBooks() {
   const handleSubmitModal = async ({ id, data }) => {
     try {
       // Remove cover_url from data before sending to backend
+      // const cleanData = { ...data };
+      // if ('cover_url' in cleanData) delete cleanData.cover_url;
       const cleanData = { ...data };
-      if ('cover_url' in cleanData) delete cleanData.cover_url;
       if (id) {
         await onUpdate(id, cleanData);
       } else {

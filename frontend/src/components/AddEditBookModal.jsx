@@ -8,6 +8,7 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
     category: '',
     isbn: '',
     total_copies: 1,
+    cover_url: '',
   });
   const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
@@ -20,9 +21,10 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
         category: editingBook.category || '',
         isbn: editingBook.isbn || '',
         total_copies: editingBook.total_copies ?? editingBook.totalCopies ?? 1,
+        cover_url: editingBook.cover_url || '',
       });
     } else {
-      setForm({ title: '', author: '', category: '', isbn: '', total_copies: 1 });
+      setForm({ title: '', author: '', category: '', isbn: '', total_copies: 1, cover_url: '' });
     }
   }, [editingBook]);
 
@@ -32,7 +34,6 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
         const response = await BooksApi.getCategories();
         console.log('📂 Categories API Response:', response);
         const data = response.data || response;
-        // Backend returns: { success: true, data: [{id: 1, name: "Fiksi"}, ...] }
         let categoryList = [];
         if (Array.isArray(data)) {
           categoryList = data.map(cat => cat.name || cat);
@@ -79,7 +80,6 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
         await onSubmit({ data: form });
       }
     } catch (error) {
-      // Error is already handled by parent (ManageBooks), modal will stay open
       console.error('Submit error:', error);
     }
   };
@@ -148,7 +148,6 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
               {errors.total_copies && <p className="mt-1 text-sm text-red-600">{errors.total_copies}</p>}
             </div>
           </div>
-          {/* Cover Image URL field removed as requested */}
           <div className="mt-6 flex justify-end gap-3">
             <button type="button" onClick={onClose} className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50">
               Cancel
@@ -162,15 +161,5 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
     </div>
   );
 }
-
-// JSDoc types for better editor hints
-/**
- * @param {{
- *  open: boolean,
- *  onClose: () => void,
- *  onSubmit: (args: {id?: string|number, data: any}) => void,
- *  editingBook?: any
- * }} props
- */
 
 export default AddEditBookModal;
