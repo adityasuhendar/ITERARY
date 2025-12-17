@@ -59,7 +59,7 @@ const getBooks = async (req, res, next) => {
 
     const booksQuery = `
       SELECT
-        id, isbn, title, author, publisher, year_published, category,
+        id, isbn, title, author, publisher, year_published, cover_url, category, cover_url,
         total_copies, available_copies, description,
         CASE
           WHEN available_copies > 0 THEN 'Available'
@@ -166,7 +166,7 @@ const getCategories = async (req, res, next) => {
 const createBook = async (req, res, next) => {
   try {
     const {
-      isbn, title, author, publisher, year_published,
+      isbn, title, author, publisher, year_published, cover_url,
       category, total_copies, available_copies, description
     } = req.body;
 
@@ -181,11 +181,11 @@ const createBook = async (req, res, next) => {
     // Insert book
     const result = await query(
       `INSERT INTO books
-       (isbn, title, author, publisher, year_published, category,
+       (isbn, title, author, publisher, year_published, cover_url, category,
         total_copies, available_copies, description)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        isbn, title, author, publisher || null, year_published || null,
+        isbn, title, author, publisher || null, year_published || null, cover_url || null,
         category || 'General', total_copies || 1, available_copies || 1,
         description || null
       ]
@@ -199,7 +199,7 @@ const createBook = async (req, res, next) => {
       message: 'Book created successfully',
       data: {
         id: result.insertId,
-        isbn, title, author, publisher, year_published,
+        isbn, title, author, publisher, year_published, cover_url,
         category, total_copies, available_copies
       }
     });
@@ -230,7 +230,7 @@ const updateBook = async (req, res, next) => {
   try {
     const { id } = req.params;
     const {
-      isbn, title, author, publisher, year_published,
+      isbn, title, author, publisher, year_published, cover_url,
       category, total_copies, available_copies, description
     } = req.body;
 
@@ -256,6 +256,7 @@ const updateBook = async (req, res, next) => {
     if (total_copies !== undefined) { updates.push('total_copies = ?'); values.push(total_copies); }
     if (available_copies !== undefined) { updates.push('available_copies = ?'); values.push(available_copies); }
     if (description !== undefined) { updates.push('description = ?'); values.push(description); }
+    if (cover_url !== undefined) { updates.push('cover_url = ?'); values.push(cover_url); }
 
     if (updates.length === 0) {
       return res.status(400).json({
