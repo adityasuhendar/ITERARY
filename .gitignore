@@ -93,6 +93,3 @@ ITERASI_1_GUIDE.md
 
 # Drawio
 *.drawio
-
-# Build configs
-cloudbuild.yaml
