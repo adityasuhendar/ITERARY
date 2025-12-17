@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, BookOpen, Layers, ClipboardList, Users, Settings, LogOut, Bell, Search, ChevronDown } from 'lucide-react';
+import { BarChart3, BookOpen, Layers, ClipboardList, Users, Settings, LogOut, Bell, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useGlobalSettings } from '../context/SettingsContext';
 
@@ -11,6 +11,7 @@ function AdminLayout({ children, hideTopbar = false }) {
   const { settings } = useGlobalSettings();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isActive = (path) => location.pathname === path;
 
@@ -26,49 +27,143 @@ function AdminLayout({ children, hideTopbar = false }) {
   const avatarUrl = settings?.profile?.avatar_url;
 
   return (
-    <div className="min-h-screen bg-[#E3F2FD] text-slate-800 flex">
+    <div className="min-h-screen bg-[#E3F2FD] text-slate-800 flex overflow-x-hidden">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
-      <aside className="w-72 text-white flex flex-col" style={{background:'#0D47A1'}}>
+      <aside 
+        className={`
+          ${sidebarOpen ? 'w-72' : 'w-20'} 
+          text-white flex flex-col transition-all duration-300
+          fixed lg:relative inset-y-0 left-0 z-30
+          ${!sidebarOpen ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}
+        `} 
+        style={{background:'#0D47A1'}}
+      >
+        {/* Header with Logo */}
         <div className="px-6 py-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
-              {logoUrl ? (
-                <img src={logoUrl.startsWith('/') ? `http://localhost:8080${logoUrl}` : logoUrl} alt="Logo" className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-bold">{appName.substring(0, 2).toUpperCase()}</span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {logoUrl ? (
+                  <img 
+                    src={logoUrl.startsWith('http') ? logoUrl : `${window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://iterary-api-889794700120.asia-southeast2.run.app'}${logoUrl}`} 
+                    alt="Logo" 
+                    className="w-full h-full object-cover"
+                    key={logoUrl}
+                  />
+                ) : (
+                  <span className="font-bold">{appName.substring(0, 2).toUpperCase()}</span>
+                )}
+              </div>
+              {sidebarOpen && (
+                <div className="transition-opacity duration-300">
+                  <div className="text-lg font-semibold">{appName}</div>
+                  <div className="text-xs text-white/70">Konsol Admin</div>
+                </div>
               )}
             </div>
-            <div>
-              <div className="text-lg font-semibold">{appName}</div>
-              <div className="text-xs text-white/70">Admin Console</div>
-            </div>
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              title={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
+            >
+              {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/dashboard') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/dashboard"><BarChart3 className="h-5 w-5"/> Dashboard</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/books') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/books"><BookOpen className="h-5 w-5"/> Manage Books</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/categories') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/categories"><Layers className="h-5 w-5"/> Manage Categories</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/borrowings') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/borrowings"><ClipboardList className="h-5 w-5"/> Borrowings</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/members') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/members"><Users className="h-5 w-5"/> Members</Link>
-          <Link className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/settings') ? 'bg-white/20' : 'hover:bg-white/10'}`} to="/admin/settings"><Settings className="h-5 w-5"/> Settings</Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/dashboard') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/dashboard"
+            title={!sidebarOpen ? "Dashboard" : ""}
+          >
+            <BarChart3 className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Dashboard</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/books') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/books"
+            title={!sidebarOpen ? "Kelola Buku" : ""}
+          >
+            <BookOpen className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Kelola Buku</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/categories') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/categories"
+            title={!sidebarOpen ? "Kelola Kategori" : ""}
+          >
+            <Layers className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Kelola Kategori</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/borrowings') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/borrowings"
+            title={!sidebarOpen ? "Peminjaman" : ""}
+          >
+            <ClipboardList className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Peminjaman</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/members') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/members"
+            title={!sidebarOpen ? "Anggota" : ""}
+          >
+            <Users className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Anggota</span>}
+          </Link>
+          <Link 
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive('/admin/settings') ? 'bg-white/20' : 'hover:bg-white/10'}`} 
+            to="/admin/settings"
+            title={!sidebarOpen ? "Pengaturan" : ""}
+          >
+            <Settings className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Pengaturan</span>}
+          </Link>
         </nav>
+
+        {/* Logout */}
         <div className="px-3 py-4 border-t border-white/10">
-          <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10 w-full text-left">
-            <LogOut className="h-5 w-5"/> Logout
+          <button 
+            onClick={handleLogout} 
+            className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/10 w-full text-left"
+            title={!sidebarOpen ? "Logout" : ""}
+          >
+            <LogOut className="h-5 w-5 flex-shrink-0"/> 
+            {sidebarOpen && <span>Logout</span>}
           </button>
         </div>
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full lg:w-auto overflow-x-hidden">
         {/* Top Navbar (optional) */}
         {!hideTopbar && (
-        <header className="mx-6 mt-6 rounded-2xl bg-white shadow-xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3 w-[40%]">
-            <div className="rounded-xl p-2 bg-blue-50"><Search className="h-5 w-5 text-blue-600"/></div>
-            <input className="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" placeholder="Search books, members, reports..." />
+        <header className="mx-4 lg:mx-6 mt-6 rounded-2xl bg-white shadow-xl px-3 lg:px-4 py-3 flex items-center justify-between flex-wrap gap-3">
+          {/* Mobile Menu Toggle - Integrated in navbar */}
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 bg-[#0D47A1] text-white rounded-lg shadow"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
+          
+          <div className="flex items-center gap-3 w-full lg:w-[40%] order-2 lg:order-1">
+            <div className="rounded-xl p-2 bg-blue-50 hidden sm:flex"><Search className="h-5 w-5 text-blue-600"/></div>
+            <input className="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5] text-sm" placeholder="Search..." />
           </div>
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-2 lg:gap-4 relative order-1 lg:order-2">
             <button onClick={() => setShowNotifications((s)=>!s)} className="relative rounded-xl p-2 bg-blue-50 hover:shadow-md transition">
               <Bell className="h-6 w-6 text-[#0D47A1]" />
               <span className="absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full px-1">3</span>
@@ -80,7 +175,12 @@ function AdminLayout({ children, hideTopbar = false }) {
               </div>
               <div className="w-10 h-10 rounded-full shadow overflow-hidden bg-blue-100 flex items-center justify-center">
                 {avatarUrl ? (
-                  <img src={avatarUrl.startsWith('/') ? `http://localhost:8080${avatarUrl}` : avatarUrl} className="w-full h-full object-cover" alt="Admin"/>
+                  <img 
+                    src={avatarUrl.startsWith('http') ? avatarUrl : `${window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://iterary-api-889794700120.asia-southeast2.run.app'}${avatarUrl}`} 
+                    className="w-full h-full object-cover" 
+                    alt="Admin"
+                    key={avatarUrl}
+                  />
                 ) : (
                   <span className="text-blue-600 font-semibold">{profileName.charAt(0).toUpperCase()}</span>
                 )}
@@ -108,6 +208,18 @@ function AdminLayout({ children, hideTopbar = false }) {
             )}
           </div>
         </header>
+        )}
+
+        {/* Mobile Menu Toggle for pages without topbar */}
+        {hideTopbar && !sidebarOpen && (
+          <div className="lg:hidden mx-4 mt-6 mb-2">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 bg-[#0D47A1] text-white rounded-lg shadow"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
         )}
 
         {/* Page content */}

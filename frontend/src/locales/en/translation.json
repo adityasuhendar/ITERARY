@@ -1,0 +1,16 @@
+{
+  "masuk": "Sign in to ITERARY",
+  "create_account": "Create an account",
+  "login_member": "Member Login",
+  "login_admin": "Admin Login",
+  "username_or_email": "Username or Email",
+  "password": "Password",
+  "sign_in": "Sign in",
+  "demo_credentials": "Demo: admin / admin123",
+  "manage_books": "Manage Books",
+  "add_new_book": "Add New Book",
+  "dashboard": "Dashboard",
+  "dashboard_admin": "Admin Dashboard",
+  "sign_out": "Sign out",
+  "search_placeholder": "Search books by title, author, or ISBN"
+}

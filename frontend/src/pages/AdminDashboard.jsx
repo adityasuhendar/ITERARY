@@ -152,7 +152,12 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
               {logoUrl ? (
-                <img src={logoUrl.startsWith('/') ? `http://localhost:8080${logoUrl}` : logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                <img 
+                  src={logoUrl.startsWith('http') ? logoUrl : `${window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://iterary-api-889794700120.asia-southeast2.run.app'}${logoUrl}`} 
+                  alt="Logo" 
+                  className="w-full h-full object-cover"
+                  key={logoUrl}
+                />
               ) : (
                 <span className="font-bold">{appName.substring(0, 2).toUpperCase()}</span>
               )}
@@ -248,7 +253,12 @@ const AdminDashboard = () => {
               </div>
               <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border-2 border-white shadow-sm overflow-hidden">
                 {avatarUrl ? (
-                  <img src={avatarUrl.startsWith('/') ? `http://localhost:8080${avatarUrl}` : avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  <img 
+                    src={avatarUrl.startsWith('http') ? avatarUrl : `${window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://iterary-api-889794700120.asia-southeast2.run.app'}${avatarUrl}`} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover"
+                    key={avatarUrl}
+                  />
                 ) : (
                   <span>{profileName.charAt(0).toUpperCase()}</span>
                 )}

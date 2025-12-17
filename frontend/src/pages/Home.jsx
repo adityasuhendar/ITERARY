@@ -1,7 +1,48 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Users, TrendingUp, Shield, ArrowRight, Github, Twitter, Instagram } from 'lucide-react'; 
+import { BookOpen, Users, TrendingUp, Shield, ArrowRight, Github, Twitter, Instagram, Download } from 'lucide-react'; 
 
 const Home = () => {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+
+  useEffect(() => {
+    // Hide if already installed/standalone
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(false);
+      return;
+    }
+
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+
+    const installed = () => {
+      setShowInstallButton(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', installed);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installed);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      setShowInstallButton(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white flex flex-col">
       {/* Hero Section */}
@@ -26,6 +67,15 @@ const Home = () => {
               <BookOpen className="h-5 w-5 mr-2" />
               Jelajahi Katalog
             </Link>
+            {showInstallButton && (
+              <button
+                onClick={handleInstallClick}
+                className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+              >
+                <Download className="h-5 w-5 mr-2" />
+                Install App
+              </button>
+            )}
             <Link
               to="/register"
               className="inline-flex items-center justify-center px-8 py-4 border border-gray-200 text-base font-medium rounded-xl text-primary-700 bg-white hover:bg-gray-50 shadow-sm transition-all"

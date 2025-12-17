@@ -64,22 +64,22 @@ function BorrowingForm({ open, onClose, onSubmit, editingBorrowing, errorMessage
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md" onClick={(e)=>e.stopPropagation()}>
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">{editingBorrowing ? 'Edit Borrowing' : 'Add Borrowing (Admin)'}</h3>
-        <p className="text-slate-600 mb-4">{editingBorrowing ? 'Update data peminjaman.' : 'Masukkan Nama, NIM, dan Judul Buku. Durasi default 7 hari.'}</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
+        <h3 className="text-base md:text-lg font-semibold text-slate-900 mb-2">{editingBorrowing ? 'Edit Borrowing' : 'Add Borrowing (Admin)'}</h3>
+        <p className="text-sm text-slate-600 mb-3 md:mb-4">{editingBorrowing ? 'Update data peminjaman.' : 'Masukkan Nama, NIM, dan Judul Buku. Durasi default 7 hari.'}</p>
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
           <div>
-            <label className="block text-sm text-slate-700 mb-1">Nama</label>
-            <input value={memberName} onChange={(e)=>setMemberName(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" />
+            <label className="block text-xs md:text-sm text-slate-700 mb-1">Nama</label>
+            <input value={memberName} onChange={(e)=>setMemberName(e.target.value)} className="w-full border border-slate-200 rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" />
           </div>
           <div>
-            <label className="block text-sm text-slate-700 mb-1">NIM</label>
-            <input value={memberNim} onChange={(e)=>setMemberNim(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" />
+            <label className="block text-xs md:text-sm text-slate-700 mb-1">NIM</label>
+            <input value={memberNim} onChange={(e)=>setMemberNim(e.target.value)} className="w-full border border-slate-200 rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" />
           </div>
           <div>
-            <label className="block text-sm text-slate-700 mb-1">Judul Buku</label>
-            <input value={bookTitle} onChange={(e)=>setBookTitle(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" />
+            <label className="block text-xs md:text-sm text-slate-700 mb-1">Judul Buku</label>
+            <input value={bookTitle} onChange={(e)=>setBookTitle(e.target.value)} className="w-full border border-slate-200 rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E88E5]" />
           </div>
           <div>
             <label className="block text-sm text-slate-700 mb-1">Durasi (hari)</label>

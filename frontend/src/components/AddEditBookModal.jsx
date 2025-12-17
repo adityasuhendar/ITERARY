@@ -94,29 +94,6 @@ function AddEditBookModal({ open, onClose, onSubmit, editingBook }) {
           {editingBook ? 'Edit Book' : 'Add New Book'}
         </h3>
         <form onSubmit={submitForm} className="mt-3 md:mt-4 space-y-3 md:space-y-4">
-          {/* Cover URL Input with Preview */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Cover Image URL</label>
-            <input
-              type="url"
-              placeholder="https://example.com/book-cover.jpg"
-              value={form.cover_url}
-              onChange={(e) => handleChange('cover_url', e.target.value)}
-              className="mt-1 w-full rounded-lg border border-blue-200 bg-white/90 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {form.cover_url && (
-              <div className="mt-2 flex justify-center">
-                <img 
-                  src={form.cover_url} 
-                  alt="Cover preview" 
-                  className="h-32 w-24 object-cover rounded-lg border border-gray-200"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                  onLoad={(e) => { e.target.style.display = 'block'; }}
-                />
-              </div>
-            )}
-          </div>
-
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700">Title</label>
             <input

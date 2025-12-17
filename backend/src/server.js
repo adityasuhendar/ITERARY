@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const { swaggerUi, swaggerSpec } = require('./config/swagger');
 
 // Import config
 const { testConnection } = require('./config/db');
@@ -60,6 +61,13 @@ app.get('/health', (req, res) => {
     message: 'ITERARY Backend API is running',
     timestamp: new Date().toISOString()
   });
+});
+
+// Swagger docs
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api/docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
 });
 
 // API Routes
