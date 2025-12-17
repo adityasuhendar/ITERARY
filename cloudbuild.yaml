@@ -1,16 +1,5 @@
 steps:
-  # Build Frontend
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:$COMMIT_SHA'
-      - '-t'
-      - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:latest'
-      - './frontend'
-    id: 'build-frontend'
-
-  # Build Backend
+  # ========== BUILD BACKEND ==========
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -21,29 +10,77 @@ steps:
       - './backend'
     id: 'build-backend'
 
-  # Push Frontend
+  # ========== BUILD FRONTEND ==========
   - name: 'gcr.io/cloud-builders/docker'
     args:
-      - 'push'
+      - 'build'
+      - '-t'
       - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:$COMMIT_SHA'
-    id: 'push-frontend'
-
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
+      - '-t'
       - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:latest'
+      - './frontend'
+    id: 'build-frontend'
 
-  # Push Backend
+  # ========== PUSH BACKEND ==========
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-backend:$COMMIT_SHA'
-    id: 'push-backend'
+    id: 'push-backend-sha'
+    waitFor: ['build-backend']
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-backend:latest'
+    id: 'push-backend-latest'
+    waitFor: ['build-backend']
+
+  # ========== PUSH FRONTEND ==========
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:$COMMIT_SHA'
+    id: 'push-frontend-sha'
+    waitFor: ['build-frontend']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:latest'
+    id: 'push-frontend-latest'
+    waitFor: ['build-frontend']
+
+  # ========== DEPLOY BACKEND TO CLOUD RUN ==========
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-backend'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'iterary-api'
+      - '--image=asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-backend:$COMMIT_SHA'
+      - '--region=asia-southeast2'
+      - '--platform=managed'
+      - '--set-env-vars=DB_HOST=localhost,DB_PORT=3306,DB_USER=adminsql,DB_PASSWORD=password,DB_NAME=iterary,DB_SOCKET_PATH=/cloudsql/iterary-479520:asia-southeast2:iterary-db-ad5f6e51,REDIS_ENABLED=false,JWT_SECRET=your-super-secret-jwt-key-change-this-in-production,JWT_EXPIRES_IN=7d,CORS_ORIGIN=https://iterary-frontend-889794700120.asia-southeast2.run.app,NODE_ENV=production'
+      - '--add-cloudsql-instances=iterary-479520:asia-southeast2:iterary-db-ad5f6e51'
+      - '--vpc-connector=iterary-vpc-connector'
+      - '--allow-unauthenticated'
+    waitFor: ['push-backend-sha']
+
+  # ========== DEPLOY FRONTEND TO CLOUD RUN ==========
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-frontend'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'iterary-frontend'
+      - '--image=asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:$COMMIT_SHA'
+      - '--region=asia-southeast2'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+    waitFor: ['push-frontend-sha']
 
 images:
   - 'asia-southeast2-docker.pkg.dev/iterary-479520/iterary-repo/iterary-frontend:$COMMIT_SHA'

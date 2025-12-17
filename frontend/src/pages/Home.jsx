@@ -184,7 +184,7 @@ const Home = () => {
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} ITERARY - Institut Teknologi Sumatera. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors"><Github className="h-5 w-5"/></a>
+              <a href="https://github.com/adityasuhendar/ITERARY" className="text-gray-400 hover:text-white transition-colors"><Github className="h-5 w-5"/></a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors"><Twitter className="h-5 w-5"/></a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors"><Instagram className="h-5 w-5"/></a>
             </div>
