@@ -57,7 +57,7 @@ const Home = () => {
             Perpustakaan Digital Masa Depan ITERA
           </p>
           <p className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto leading-relaxed">
-            ITERA Repository Archive Reading facilitY — Sistem manajemen perpustakaan modern yang memudahkan Anda mencari, meminjam, dan membaca buku di mana saja.
+            ITERA Library And Reading facilitY — Sistem manajemen perpustakaan modern yang memudahkan Anda mencari, meminjam, dan membaca buku di mana saja.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link

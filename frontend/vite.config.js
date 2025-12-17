@@ -11,7 +11,7 @@ export default defineConfig({
       manifest: {
         name: 'ITERARY - Library Management System',
         short_name: 'ITERARY',
-        description: 'ITERA Repository Archive Reading facilitY - Sistem manajemen perpustakaan modern',
+        description: 'ITERA Library And Reading facilitY - Sistem manajemen perpustakaan modern',
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
