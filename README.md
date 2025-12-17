@@ -8,7 +8,7 @@ A modern three-tier web application for library management, built on Google Clou
 
 ## 👥 Contributors
 
-**Sistem Perpustakaan Digital ITERARY (ITERA Repository Archive Reading Facility)**
+**Sistem Perpustakaan Digital ITERARY (ITERA Library And Reading facilitY)**
 
 | No | Name | NIM |
 |----|------|-----|
