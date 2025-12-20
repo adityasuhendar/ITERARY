@@ -6,8 +6,11 @@
 
 > Sistem manajemen perpustakaan digital berbasis cloud untuk Institut Teknologi Sumatera
 
-🌐 **Live Demo:** [https://iterary.web.id/](https://iterary.web.id/)  
-📦 **Repository:** [https://github.com/adityasuhendar/ITERARY.git](https://github.com/adityasuhendar/ITERARY.git)
+## 🔗 Link Penting
+- 🌐 **Website:** [https://iterary.web.id](https://iterary.web.id)  
+- 📦 **Repository:** [https://github.com/adityasuhendar/ITERARY.git](https://github.com/adityasuhendar/ITERARY.git)  
+- 🎬 **Video Demo:** [https://s.itera.id/Video-ITERARY](https://s.itera.id/Video-ITERARY)  
+- 📄 **Laporan:** [https://s.itera.id/Laporan-ITERARY](https://s.itera.id/Laporan-ITERARY)
 
 ---
 
